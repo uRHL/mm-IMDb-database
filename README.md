@@ -1,4 +1,4 @@
-#Film Scrapping
+#filmdb.entities.Film Scrapping
 This is a NoSQL database for films. The films' informaiton is scrapped from the web portal IMDb using JSoup. The documents are inserted in an Elastic Search index, which provides 4 predefined queries about films.
 
 #Obtaining the required data
