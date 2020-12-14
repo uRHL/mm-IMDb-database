@@ -1,3 +1,6 @@
+package filmdb.scrappers;
+
+import filmdb.entities.Film;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -56,7 +59,7 @@ public class ExcelScraper {
                 float avgScore = (float) scoreCell.getNumericCellValue();
                 String genres = genreCell.getStringCellValue();
 
-                //If the values are not corrupt then create the Film object
+                //If the values are not corrupt then create the filmdb.entities.Film object
                 Film film = new Film(id);
                 film.setUrl(filmURL);
                 film.setTitle(title);

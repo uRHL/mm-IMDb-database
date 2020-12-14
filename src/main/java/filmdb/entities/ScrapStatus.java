@@ -1,3 +1,5 @@
+package filmdb.entities;
+
 public class ScrapStatus {
     public static final int ERROR_STATUS = 0;
     public static final int NOT_COMPLETED_STATUS = 1;

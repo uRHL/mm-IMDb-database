@@ -1,3 +1,8 @@
+package filmdb.scrappers;
+
+import filmdb.entities.Film;
+import filmdb.entities.ScrapStatus;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -106,7 +111,7 @@ public class FilmScraper {
     public void scrapFilmByImdbID(int imdbID) throws Exception {
         long start = System.currentTimeMillis();
         if (!this.filmList.contains(new Film(imdbID))){
-            throw new IndexOutOfBoundsException("Film not found in the list");
+            throw new IndexOutOfBoundsException("filmdb.entities.Film not found in the list");
         }
         try {
             this.outputStream.write(("-----|STARTING WEB SCRAPPING|-----\r\n").getBytes(StandardCharsets.UTF_8));

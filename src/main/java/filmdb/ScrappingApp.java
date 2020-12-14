@@ -1,3 +1,7 @@
+package filmdb;
+
+import filmdb.scrappers.FilmScraper;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +24,7 @@ public class ScrappingApp {
             //filmScraper.scrapFilmByImdbID(118114);
 
             //2nd mode: scrap a set of films
-            //filmScraper.scrapFilmSet(ScrappingApp.parseFilmList(FILMS_TO_SCRAP));
+            //filmScraper.scrapFilmSet(filmdb.ScrappingApp.parseFilmList(FILMS_TO_SCRAP));
 
             //3rd mode: scrap all available films
             filmScraper.scrapAllFilms();
