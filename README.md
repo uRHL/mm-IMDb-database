@@ -1,4 +1,4 @@
-#filmdb.entities.Film Scrapping
+#Film Data Base
 This is a NoSQL database for films. The films' informaiton is scrapped from the web portal IMDb using JSoup. The documents are inserted in an Elastic Search index, which provides 4 predefined queries about films.
 
 #Obtaining the required data
@@ -73,7 +73,7 @@ IF text.contains("It looks like we don't have a Synopsis for this title yet") TH
 				"plotKeywords":{"type":"text"},
 				"filmingLocations":{"type":"text"},
 				"originCountry":{"type":"text"},
-				"primaryLanguage":{"type":"text"},
+				"primaryLanguages":{"type":"text"},
 			}
 		}
 	}'

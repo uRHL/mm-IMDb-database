@@ -3,7 +3,6 @@ package filmdb.entities;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
-import com.sun.istack.internal.NotNull;
 import filmdb.scrappers.WebScraper;
 
 import java.net.UnknownHostException;
@@ -17,6 +16,7 @@ public class Film {
      */
     private static final int DEFAULT_VALUE = -1;
     private static final float DEFAULT_VALUE_F = -1F;
+    private static final String ATTR_NOT_FOUND = "None";
     /**
      * The year was obtained from this article: https://www.history.com/this-day-in-history/first-commercial-movie-screened
      */
@@ -27,15 +27,12 @@ public class Film {
     private final ScrapStatus status;
 
     @Expose
-    @NotNull
     private final int imdbID;
 
     @Expose
-    @NotNull
     private String title;
 
     @Expose
-    @NotNull
     private String synopsis;
 
     // This attribute is not always scrapable, thus is optional
@@ -43,15 +40,12 @@ public class Film {
     private String originCountry;
 
     @Expose
-    @NotNull
     private int releaseYear;
 
     @Expose
-    @NotNull
     private float avgScore;
 
     @Expose
-    @NotNull
     private String[] genres;
 
     // This attribute is not always scrapable, thus is optional
@@ -59,7 +53,6 @@ public class Film {
     private String[] mainActors;
 
     @Expose
-    @NotNull
     private String[] plotKeywords;
 
     // This attribute is not always scrapable, thus is optional
@@ -77,9 +70,9 @@ public class Film {
      */
     public Film(int imdbID) throws InvalidPropertiesFormatException {
         this.status = new ScrapStatus();
-        if (imdbID <= 0){
+        if (imdbID <= 0) {
             throw new InvalidPropertiesFormatException("Invalid filmdb.entities.Film.imdbID value (negative)");
-        }else {
+        } else {
             this.imdbID = imdbID;
         }
         this.releaseYear = DEFAULT_VALUE;
@@ -99,9 +92,9 @@ public class Film {
     }
 
     public void setUrl(String url) {
-        if (url == null){
+        if (url == null) {
             throw new NullPointerException("Impossible to set filmdb.entities.Film.url to null");
-        }else {
+        } else {
             this.url = url;
         }
 
@@ -119,13 +112,12 @@ public class Film {
      * @param title String containing the new title
      */
     public void setTitle(String title) throws InvalidPropertiesFormatException {
-        if (title.contains("(")) {
-            //Separate the title and the year
-            String[] sTitle = title.split("[(]");
-            //Get the title
-            title = sTitle[0].trim();
-            //Remove white spaces and get the year
-            this.setReleaseYear(Integer.parseInt(sTitle[1].replace(" ", "").substring(0, 4)));
+        //Check if the title contains something enclosed with parenthesis
+        if (title.contains("(") && title.contains(")")) {
+            //Obtain the title
+            this.setReleaseYear(WebScraper.parseYear(title));
+            //Remove the year and get the title
+            title = title.substring(0, title.indexOf("(")).trim();
         }
         this.title = title;
     }
@@ -135,9 +127,9 @@ public class Film {
     }
 
     public void setAvgScore(float avgScore) throws InvalidPropertiesFormatException {
-        if (avgScore < 0 || avgScore > 10){
+        if (avgScore < 0 || avgScore > 10) {
             throw new InvalidPropertiesFormatException("Invalid filmdb.entities.Film.avgScore value (out of bounds)");
-        }else {
+        } else {
             this.avgScore = avgScore;
         }
     }
@@ -147,9 +139,9 @@ public class Film {
     }
 
     public void setGenres(String[] genres) {
-        if (genres == null){
+        if (genres == null) {
             throw new NullPointerException("Impossible to set filmdb.entities.Film.genres to null");
-        }else {
+        } else {
             this.genres = genres;
         }
     }
@@ -160,9 +152,9 @@ public class Film {
 
     public void setMainActors(String[] mainActors) {
         //mainActors attribute may not be found. But it is an optional attribute
-        if (mainActors == null){
-            this.mainActors = new String[]{"None"};
-        }else{
+        if (mainActors == null) {
+            this.mainActors = new String[]{ATTR_NOT_FOUND};
+        } else {
             this.mainActors = mainActors;
         }
     }
@@ -172,9 +164,10 @@ public class Film {
     }
 
     public void setSynopsis(String synopsis) {
-        if (synopsis == null){
-            throw new NullPointerException("Impossible to set filmdb.entities.Film.synopsis to null");
-        }else {
+        if (synopsis == null) {
+            //throw new NullPointerException("Impossible to set filmdb.entities.Film.synopsis to null");
+            this.synopsis = ATTR_NOT_FOUND;
+        } else {
             this.synopsis = synopsis;
         }
     }
@@ -184,9 +177,10 @@ public class Film {
     }
 
     public void setPlotKeywords(String[] plotKeywords) {
-        if (plotKeywords == null || plotKeywords.length == 0){
-            throw new NullPointerException("Impossible to set filmdb.entities.Film.plotKeywords to null");
-        }else {
+        if (plotKeywords == null || plotKeywords.length == 0) {
+            this.plotKeywords = new String[]{ATTR_NOT_FOUND};
+            //throw new NullPointerException("Impossible to set filmdb.entities.Film.plotKeywords to null");
+        } else {
             this.plotKeywords = plotKeywords;
         }
     }
@@ -197,9 +191,9 @@ public class Film {
 
     public void setOriginCountry(String originCountry) {
         //OriginCountry attribute may not be found. But it is an optional attribute
-        if (originCountry == null){
+        if (originCountry == null) {
             this.originCountry = "";
-        }else {
+        } else {
             this.originCountry = originCountry;
         }
     }
@@ -211,9 +205,9 @@ public class Film {
     public void setReleaseYear(int releaseYear) throws InvalidPropertiesFormatException {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(System.currentTimeMillis());
-        if (releaseYear < Film.FIRST_FILM_RELEASE_YEAR || releaseYear > cal.get(Calendar.YEAR)){
+        if (releaseYear < Film.FIRST_FILM_RELEASE_YEAR || releaseYear > cal.get(Calendar.YEAR)) {
             throw new InvalidPropertiesFormatException("Invalid filmdb.entities.Film.releaseYear value (out of bounds)");
-        }else {
+        } else {
             this.releaseYear = releaseYear;
         }
     }
@@ -224,9 +218,9 @@ public class Film {
 
     public void setPrimaryLanguages(String[] primaryLanguages) {
         //PrimaryLanguages attribute may not be found. But it is an optional attribute
-        if (primaryLanguages == null){
-            this.primaryLanguages = new String[]{""};
-        }else {
+        if (primaryLanguages == null) {
+            this.primaryLanguages = new String[]{ATTR_NOT_FOUND};
+        } else {
             this.primaryLanguages = primaryLanguages;
         }
     }
@@ -237,15 +231,16 @@ public class Film {
 
     public void setFilmingLocations(String[] filmingLocations) {
         //FilmingLocations attribute may not be found. But it is an optional attribute
-        if (filmingLocations == null){
-            this.filmingLocations = new String[]{""};
-        }else {
+        if (filmingLocations == null) {
+            this.filmingLocations = new String[]{ATTR_NOT_FOUND};
+        } else {
             this.filmingLocations = filmingLocations;
         }
     }
 
     // Class methods
     public String toJson() {
+
         Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
         return gson.toJson(this, Film.class);
 
@@ -278,15 +273,20 @@ public class Film {
                 this.setOriginCountry(webScraper.getCountryOfOrigin());
                 this.setPrimaryLanguages(webScraper.getPrimaryLanguages());
 
-                //All the fields could be correctly set
-                this.status.setStatusCompleted();
+                if (this.checkRequiredAttributes()) {
+                    //All the fields could be correctly set
+                    this.status.setStatusCompleted();
+                } else {
+                    throw new Exception("Missing required attribute: '" + this.getIncorrectAttribute() + "'");
+                }
             } catch (Exception e) {
-                if ((e instanceof UnknownHostException)){
+                if ((e instanceof UnknownHostException)) {
                     this.status.setServerError();
-                }else{
+                } else {
                     this.status.setStatusError(e.toString());
                 }
-                e.printStackTrace();
+                System.out.println("ERROR in function 'initializeUnsetAttributes' (ref: " + e + ")");
+
             }
         }
     }
@@ -294,12 +294,39 @@ public class Film {
     /**
      * Check that the attributes, found in the IMDb excel file, has been correctly set.
      * The attributes that can be found in the excel are {@link Film#imdbID}, {@link Film#url},
-     *  {@link Film#title}, {@link Film#avgScore}, {@link Film#genres}
+     * {@link Film#title}, {@link Film#avgScore}, {@link Film#genres}
      *
      * @return True if all the corresponding attributes are properly initialized. False otherwise
      */
     private boolean checkExcelValues() {
         return ((this.imdbID != DEFAULT_VALUE) && (!this.url.isEmpty()) && (!this.title.isEmpty()) && (this.avgScore != DEFAULT_VALUE_F) && (this.genres.length >= 1));
+    }
+
+    private boolean checkRequiredAttributes() {
+        boolean isOk = false;
+        //First the basic attributes are checked
+        if (this.checkExcelValues() && this.releaseYear != DEFAULT_VALUE) {
+            //At least one of these attributes must be correctly scrapped
+            isOk = (!this.synopsis.equals(Film.ATTR_NOT_FOUND) || !this.plotKeywords[0].equals(Film.ATTR_NOT_FOUND));
+        }
+        return isOk;
+    }
+
+    private String getIncorrectAttribute() {
+        String incorrectAttr = "unknown";
+        if (!this.checkExcelValues()) {
+            incorrectAttr = "Basic attributes from excel";
+        }
+        if (this.releaseYear == DEFAULT_VALUE) {
+            incorrectAttr = "releaseYear";
+        }
+        if (this.synopsis.equals(Film.ATTR_NOT_FOUND)) {
+            incorrectAttr = "synopsis";
+        }
+        if (this.plotKeywords[0].equals(Film.ATTR_NOT_FOUND)) {
+            incorrectAttr = "plotKeywords";
+        }
+        return incorrectAttr;
     }
 
     @Override

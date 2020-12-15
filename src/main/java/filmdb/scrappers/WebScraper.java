@@ -30,25 +30,17 @@ public class WebScraper {
      * @param date String containing some type of date information
      * @return the year contained in the String date
      */
-    private static int parseYear(String date) {
+    public static int parseYear(String date) {
         String year = "";
-        if (date.contains("-")) {
-            //The date is similar to  "TV Series (2014-)"
-            year = date.split("[(]")[0].substring(0, 4);
-        } else {
-            //The date is similar to  "2 July 1999 (Spain)"
-            for (String str : date.split("[ ]")) {
-                if (str.matches("[0-9]{4}")) {
-                    year = str;
-                }
-            }
-        }
+        //Extract the year enclosed within parenthesis
+        year = date.substring(date.indexOf("(")+1, date.indexOf(")")).substring(0, 4);
         //verify that the year format is OK
         if (year.matches("[0-9]{4}")) {
             return Integer.parseInt(year);
         } else {
             return -1;
         }
+
     }
 
     /**
@@ -84,9 +76,9 @@ public class WebScraper {
             if (link != null) {
                 url = IMDb_ROOT + link;
             }
-        }catch (Exception e){
-            System.out.println("ERROR in function 'getUrlByKeyword' (ref: " + e + ")");
-        }finally {
+        } catch (Exception e) {
+            System.out.println("UNSUCCESSFUL function 'getUrlByKeyword' (ref: " + e + ")");
+        } finally {
             return url;
         }
     }
@@ -100,7 +92,7 @@ public class WebScraper {
         try {
             return (this.url + ":\t" + this.doc.title() + "\n");
         } catch (Exception e) {
-            System.out.println("ERROR in function 'getPageTitle' (ref: " + e + ")");
+            System.out.println("UNSUCCESSFUL function 'getPageTitle' (ref: " + e + ")");
             return null;
         }
     }
@@ -115,7 +107,7 @@ public class WebScraper {
             String completeDate = this.doc.select("a[title='See more release dates']").text();
             return WebScraper.parseYear(completeDate);
         } catch (Exception e) {
-            System.out.println("ERROR in function 'getReleaseYear' (ref: " + e + ")");
+            System.out.println("UNSUCCESSFUL function 'getReleaseYear' (ref: " + e + ")");
             return -1;
         }
     }
@@ -142,7 +134,7 @@ public class WebScraper {
             }
             return mainActors.toArray(new String[0]);
         } catch (Exception e) {
-            System.out.println("ERROR in function 'getMainActors' (ref: " + e + ")");
+            System.out.println("UNSUCCESSFUL function 'getMainActors' (ref: " + e + ")");
             return null;
         }
 
@@ -164,7 +156,7 @@ public class WebScraper {
                 synopsis = synopsisScraper.doc.selectFirst("li[id~=summary-[\\w\\d\\W]]").child(0).text();
             }
         } catch (Exception e) {
-            System.out.println("ERROR in function 'getSynopsis' (ref: " + e + ")");
+            System.out.println("UNSUCCESSFUL function 'getSynopsis' (ref: " + e + ")");
             synopsis = null;
         }
         return WebScraper.removeNonAsciiChars(synopsis);
@@ -184,8 +176,8 @@ public class WebScraper {
                 plotKeywords.add(elem.text());
             }
             return plotKeywords.toArray(new String[0]);
-        }catch (Exception e){
-            System.out.println("ERROR in function 'getPlotKeywords' (ref: " + e + ")");
+        } catch (Exception e) {
+            System.out.println("UNSUCCESSFUL function 'getPlotKeywords' (ref: " + e + ")");
             return null;
         }
     }
@@ -199,7 +191,7 @@ public class WebScraper {
         try {
             return getElemLinkContaining("country_of_origin").text();
         } catch (Exception e) {
-            System.out.println("ERROR in function 'getOriginCountry' (ref: " + e + ")");
+            System.out.println("UNSUCCESSFUL function 'getOriginCountry' (ref: " + e + ")");
             return null;
         }
     }
@@ -218,7 +210,7 @@ public class WebScraper {
             }
             return primaryLanguages.toArray(new String[0]);
         } catch (Exception e) {
-            System.out.println("ERROR in function 'getPrimaryLanguages' (ref: " + e + ")");
+            System.out.println("UNSUCCESSFUL function 'getPrimaryLanguages' (ref: " + e + ")");
             return null;
         }
     }
@@ -233,12 +225,16 @@ public class WebScraper {
         try {
             WebScraper locationScraper = new WebScraper(this.getUrlByKeyword("locations"));
             Elements elements = locationScraper.getElementsLinkContaining("locations=");
+
             for (Element elem : elements) {
                 locations.add(elem.text());
             }
+            if (locations.isEmpty()) {
+                throw new Exception("No locations found");
+            }
             return locations.toArray(new String[0]);
         } catch (Exception e) {
-            System.out.println("ERROR in function 'getFilmingLocations' (ref: " + e + ")");
+            System.out.println("UNSUCCESSFUL function 'getFilmingLocations' (ref: " + e + ")");
             return null;
         }
     }
@@ -256,7 +252,7 @@ public class WebScraper {
         try {
             linkElem = this.doc.selectFirst("a[href~=[\\w\\d\\W]" + keyword + "[\\w\\d\\W]]");
         } catch (Exception e) {
-            System.out.println("ERROR in function 'getElemLinkContaining' (ref: " + e + ")");
+            System.out.println("UNSUCCESSFUL function 'getElemLinkContaining' (ref: " + e + ")");
             linkElem = null;
         }
         return linkElem;
@@ -274,7 +270,7 @@ public class WebScraper {
         try {
             linkElemList = this.doc.select("a[href~=[\\w\\d\\W]" + keyword + "[\\w\\d\\W]]");
         } catch (Exception e) {
-            System.out.println("ERROR in function 'getElementsLinkContaining' (ref: " + e + ")");
+            System.out.println("UNSUCCESSFUL function 'getElementsLinkContaining' (ref: " + e + ")");
             linkElemList = null;
         }
         return linkElemList;
@@ -291,7 +287,7 @@ public class WebScraper {
         try {
             linkElemList = this.doc.select("a[href~=" + substring + "[\\w\\d\\W]]");
         } catch (Exception e) {
-            System.out.println("ERROR in function 'getElementsLinkStartingBy' (ref: " + e + ")");
+            System.out.println("UNSUCCESSFUL function 'getElementsLinkStartingBy' (ref: " + e + ")");
             linkElemList = null;
         }
         return linkElemList;

@@ -3,7 +3,10 @@ package filmdb.scrappers;
 import filmdb.entities.Film;
 import filmdb.entities.ScrapStatus;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,6 +22,7 @@ public class FilmScraper {
     private int uncompletedScraps;
     private int failedScraps;
     private int totalScraps;
+    private long totalScrapTime;
     private final long initDate;
     private final ArrayList<Film> filmList;
     private ArrayList<Integer> notScrappedFilms;
@@ -35,6 +39,7 @@ public class FilmScraper {
         this.uncompletedScraps = 0;
         this.failedScraps = 0;
         this.totalScraps = 0;
+        this.totalScrapTime = 0;
         this.initDate = System.currentTimeMillis();
         this.filmList = new ArrayList<>();
         this.notScrappedFilms = new ArrayList<>();
@@ -66,9 +71,9 @@ public class FilmScraper {
         long start = System.currentTimeMillis();
         film.initializeUnsetAttributes();
         this.writeFilmScrappingStats(film.getImdbID(), System.currentTimeMillis() - start, film.getStatus());
-        if (!film.getStatus().isCompleted()){
+        if (!film.getStatus().isCompleted()) {
             this.notScrappedFilms.add(film.getImdbID());
-            if (film.getStatus().isServerError()){
+            if (film.getStatus().isServerError()) {
                 throw new RuntimeException("ACCESS DENIED OR SERVER DOWN");
             }
         }
@@ -87,16 +92,16 @@ public class FilmScraper {
 
     /**
      * Scraps all the information of the films created from the IMDb data excel
-     *
      */
     public void scrapAllFilms() {
         long start = System.currentTimeMillis();
         try {
             this.outputStream.write(("-----|STARTING WEB SCRAPPING|-----\r\n").getBytes(StandardCharsets.UTF_8));
+            this.outputStream.write(("--------|Mode: full scrap|--------\r\n").getBytes(StandardCharsets.UTF_8));
             this.filmList.parallelStream().forEach(this::scrapRemainingAttr);
         } catch (Exception e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             //Try to write the statistics into the Log
             this.writeWebScrappingStats(System.currentTimeMillis() - start);
         }
@@ -108,36 +113,57 @@ public class FilmScraper {
      *
      * @param imdbID Id of the film to be scrapped
      */
-    public void scrapFilmByImdbID(int imdbID) throws Exception {
+    public void scrapFilmByImdbID(int imdbID) {
         long start = System.currentTimeMillis();
-        if (!this.filmList.contains(new Film(imdbID))){
-            throw new IndexOutOfBoundsException("filmdb.entities.Film not found in the list");
-        }
         try {
-            this.outputStream.write(("-----|STARTING WEB SCRAPPING|-----\r\n").getBytes(StandardCharsets.UTF_8));
-
+            if (!this.filmList.contains(new Film(imdbID))) {
+                throw new IndexOutOfBoundsException("filmdb.entities.Film not found in the list");
+            }
             //Find the film to be scrapped
-            for (Film film: this.filmList){
-                if (film.getImdbID()== imdbID){
+            for (Film film : this.filmList) {
+                if (film.getImdbID() == imdbID) {
                     this.scrapRemainingAttr(film);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }finally {
+        }
+    }
+
+    public void scrapSingleFilm(int imdbID) {
+        long start = System.currentTimeMillis();
+        try {
+            this.outputStream.write(("-----|STARTING WEB SCRAPPING|-----\r\n").getBytes(StandardCharsets.UTF_8));
+            this.outputStream.write(("-------|Mode: single scrap|-------\r\n").getBytes(StandardCharsets.UTF_8));
+            this.scrapFilmByImdbID(imdbID);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
             //Try to write the statistics into the Log
             this.writeWebScrappingStats(System.currentTimeMillis() - start);
+
         }
     }
 
     /**
      * Scraps a given set of films
+     *
      * @param list List containing the imdbIDs of the films to be scrapped
      * @throws Exception Raised when scrapping the attributes from the web
      */
-    public void scrapFilmSet(List<Integer> list) throws Exception {
-        for (Integer filmToScrap: list){
-            this.scrapFilmByImdbID(filmToScrap);
+    public void scrapFilmSet(List<Integer> list) {
+
+        long start = System.currentTimeMillis();
+        try {
+            this.outputStream.write(("-----|STARTING WEB SCRAPPING|-----\r\n").getBytes(StandardCharsets.UTF_8));
+            this.outputStream.write(("------|Mode: partial scrap|-------\r\n").getBytes(StandardCharsets.UTF_8));
+
+            list.parallelStream().forEach(this::scrapFilmByImdbID);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            //Try to write the statistics into the Log
+            this.writeWebScrappingStats(System.currentTimeMillis() - start);
         }
     }
 
@@ -164,7 +190,6 @@ public class FilmScraper {
     }
 
 
-
     /**
      * Adds to the {@link FilmScraper#SCRAP_LOG} the statistics obtained from scrapping all the available films
      *
@@ -176,10 +201,10 @@ public class FilmScraper {
         //Try to write the statistics into the Log
         try {
             double avgScrapTime;
-            if (this.successfulScraps <= 0){
+            if (this.successfulScraps <= 0) {
                 avgScrapTime = 0;
-            }else{
-                avgScrapTime = (timelapse / this.successfulScraps);
+            } else {
+                avgScrapTime = (this.totalScrapTime / this.successfulScraps) / 1000.0;
             }
 
             this.outputStream.write(("-------------------------------------\r\n").getBytes(StandardCharsets.UTF_8));
@@ -194,7 +219,7 @@ public class FilmScraper {
             this.outputStream.write(strToBytes);
             strToBytes = ("Failed scraps: " + this.getOverallRatio(failedScraps) + "\r\n").getBytes(StandardCharsets.UTF_8);
             this.outputStream.write(strToBytes);
-            strToBytes = ("Non-scrapped films: " + this.notScrappedFilms  + "\r\n").getBytes(StandardCharsets.UTF_8);
+            strToBytes = ("Non-scrapped films: " + this.notScrappedFilms + "\r\n").getBytes(StandardCharsets.UTF_8);
             this.outputStream.write(strToBytes);
 
             this.outputStream.write(("-------------------------------------\r\n").getBytes(StandardCharsets.UTF_8));
@@ -210,26 +235,27 @@ public class FilmScraper {
      *
      * @param filmID    id of the film whose scrapping statistics are printed
      * @param timelapse time elapses scrapping the necessary information
-     * @param status status of the scrapping. OK if the operation was successful. Otherwise contains the reference to exception caused
+     * @param status    status of the scrapping. OK if the operation was successful. Otherwise contains the reference to exception caused
      * @return True if the statistics could be written in the log. False otherwise
      */
     private boolean writeFilmScrappingStats(int filmID, long timelapse, ScrapStatus status) {
         boolean result = false;
         try {
-            switch (status.getStatusCode()){
+            switch (status.getStatusCode()) {
                 case ScrapStatus.COMPLETED_STATUS:
                     this.successfulScraps++;
                     outputStream.write(("Scrapped film: " + filmID + " (" + (timelapse / 1000) + " seconds)\r\n").getBytes(StandardCharsets.UTF_8));
                     break;
                 case ScrapStatus.ERROR_STATUS:
                     this.failedScraps++;
-                    outputStream.write(("ERROR scrapping film: " + filmID + " (ref: " + status.getMessage() +")\r\n").getBytes(StandardCharsets.UTF_8));
+                    outputStream.write(("ERROR scrapping film: " + filmID + " (ref: " + status.getMessage() + ")\r\n").getBytes(StandardCharsets.UTF_8));
                     break;
                 case ScrapStatus.NOT_COMPLETED_STATUS:
                     this.uncompletedScraps++;
-                    outputStream.write(("ERROR scrapping film: " + filmID + " (ref: " + status.getMessage() +")\r\n").getBytes(StandardCharsets.UTF_8));
+                    outputStream.write(("INCOMPLETE scrapping film: " + filmID + " (ref: " + status.getMessage() + ")\r\n").getBytes(StandardCharsets.UTF_8));
                     break;
             }
+            this.totalScrapTime += timelapse;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -268,7 +294,7 @@ public class FilmScraper {
             DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
                     new FileOutputStream(BULK_TASKS_FILE, true)));
             for (Film film : this.filmList) {
-                if (film.getStatus().isCompleted()){
+                if (film.getStatus().isCompleted()) {
                     out.writeBytes("{\"index\":{}}\r\n");
                     out.writeBytes(film.toJson() + "\r\n");
                     successfulWrites++;

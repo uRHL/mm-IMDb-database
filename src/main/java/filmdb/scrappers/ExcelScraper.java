@@ -79,9 +79,9 @@ public class ExcelScraper {
         // Try to write the statistic into the log
         try {
             logStream.write(("-----|EXCEL SCRAPPING STATISTICS|----\r\n").getBytes(StandardCharsets.UTF_8));
-            byte[] strToBytes = ("Scrapping rows from " + start + " to " + (start+quantumToScrap) + " [total rows = " + totalRows + "]\r\n").getBytes(StandardCharsets.UTF_8);
+            byte[] strToBytes = ("Scrapping rows from " + start + " to " + (start + quantumToScrap) + " [total rows = " + totalRows + "]\r\n").getBytes(StandardCharsets.UTF_8);
             logStream.write(strToBytes);
-            strToBytes = ("Successful Excel scraps: " + successfulReads + "/" + quantumToScrap +"\r\n").getBytes(StandardCharsets.UTF_8);
+            strToBytes = ("Successful Excel scraps: " + successfulReads + "/" + quantumToScrap + "\r\n").getBytes(StandardCharsets.UTF_8);
             logStream.write(strToBytes);
             logStream.write(("-------------------------------------\r\n").getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
