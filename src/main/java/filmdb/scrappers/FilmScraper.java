@@ -3,10 +3,7 @@ package filmdb.scrappers;
 import filmdb.entities.Film;
 import filmdb.entities.ScrapStatus;
 
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,8 +11,8 @@ import java.util.List;
 
 public class FilmScraper {
     //Class parameters
-    private static final String BULK_TASKS_FILE = "bulkTasks.json";
-    private static final String SCRAP_LOG = "scrappingApp.log";
+    private static final String BULK_TASKS_FILE = "..//mm-IMDb-database//output//bulkTasks.json";
+    private static final String SCRAP_LOG = "..//mm-IMDb-database//output//scrappingApp.log";
     private static final double AVG_SCRAP_TIME = 5.7; // measured in seconds
 
     // Attributes
@@ -28,7 +25,7 @@ public class FilmScraper {
     private final long initDate;
     private final ArrayList<Film> scrappedFilms;
     private ArrayList<Integer> notScrappedFilms;
-    private final FileOutputStream outputStream = new FileOutputStream(FilmScraper.SCRAP_LOG, true);
+    private final FileOutputStream outputStream = new FileOutputStream(new File(FilmScraper.SCRAP_LOG).getCanonicalPath(), true);
 
     /**
      * Constructor to initialize a new {@link FilmScraper} that will scrap the films contained in the specified excel file
@@ -48,7 +45,8 @@ public class FilmScraper {
         this.notScrappedFilms = new ArrayList<>();
 
         this.writeInitialStats(imdbDataExcelFile);
-        this.scrappedFilms.addAll(new ExcelScraper(imdbDataExcelFile).scrapExcel(startIndex, totalFilmsToScrap, this.outputStream));
+        File excelFile = new File(imdbDataExcelFile);
+        this.scrappedFilms.addAll(new ExcelScraper(excelFile.getCanonicalPath()).scrapExcel(startIndex, totalFilmsToScrap, this.outputStream));
         if (this.scrappedFilms.isEmpty()) {
             throw new Exception("The excel format is not correct");
         }
@@ -95,7 +93,7 @@ public class FilmScraper {
      */
     private void updateScrappingProgress() {
 
-        double currentProgress = ((double)(this.successfulScraps + this.uncompletedScraps + this.failedScraps) / this.totalScraps) * 100;
+        double currentProgress = ((double) (this.successfulScraps + this.uncompletedScraps + this.failedScraps) / this.totalScraps) * 100;
         if (currentProgress > this.scrappingProgress) {
             this.scrappingProgress++;
             System.out.println("****** Scrapping progress: " + this.scrappingProgress + "%");
@@ -146,21 +144,20 @@ public class FilmScraper {
     }
 
     /**
-     * Scraps a single film given its index in the {@link FilmScraper#scrappedFilms}
+     * Scraps a single film from {@link FilmScraper#scrappedFilms} given its imdbID
      *
      * @param imdbID Id of the film to be scrapped
      */
     private void scrapFilmByImdbID(int imdbID) {
-        long start = System.currentTimeMillis();
+
         try {
-            if (!this.scrappedFilms.contains(new Film(imdbID))) {
-                throw new IndexOutOfBoundsException("Film " + imdbID + " not found in the list");
-            }
-            //Find the film to be scrapped
-            for (Film film : this.scrappedFilms) {
-                if (film.getImdbID() == imdbID) {
-                    this.scrapRemainingAttr(film);
-                }
+            int filmIndex = this.scrappedFilms.indexOf(new Film(imdbID));
+            if (filmIndex == -1) {
+                this.notScrappedFilms.add(imdbID);
+                outputStream.write(("ERROR scrapping film: " + imdbID + " (ref: Film not found in the list)\r\n").getBytes(StandardCharsets.UTF_8));
+                this.failedScraps++;
+            } else {
+                this.scrapRemainingAttr(this.scrappedFilms.get(filmIndex));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -168,7 +165,7 @@ public class FilmScraper {
     }
 
     /**
-     * Scraps a single film given its index in the {@link FilmScraper#scrappedFilms}
+     * Scraps a single film from {@link FilmScraper#scrappedFilms} given its imdbID
      *
      * @param imdbID Id of the film to be scrapped
      * @see FilmScraper#scrapFilmByImdbID(int)
@@ -337,7 +334,7 @@ public class FilmScraper {
             int successfulWrites = 0;
             long start = System.currentTimeMillis();
             DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
-                    new FileOutputStream(BULK_TASKS_FILE, true)));
+                    new FileOutputStream(new File(BULK_TASKS_FILE).getCanonicalPath(), true)));
             for (Film film : this.scrappedFilms) {
                 if (film.getStatus().isCompleted()) {
                     out.writeBytes("{\"index\":{}}\r\n");

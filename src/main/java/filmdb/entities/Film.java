@@ -115,7 +115,7 @@ public class Film {
         //Try to extract the release year from the title
         this.setReleaseYear(WebScraper.parseYear(title));
         //Remove the implicit release year
-        this.title =  title.replaceAll("[(0-9)]{6}", "").trim();
+        this.title = title.replaceAll("[(0-9)]{6}", "").trim();
     }
 
     public float getAvgScore() {

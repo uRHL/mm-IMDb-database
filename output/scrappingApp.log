@@ -1,6 +1,6 @@
 -----|NEW SCRAPPING APP|-------------
 Started at: Tue Dec 15 21:58:23 CET 2020
-Initial data load file: C:\Users\Elir Ray\IdeaProjects\mm-IMDb-database\src\imbd-data\MovieGenreIGC_v3.xlsx
+Initial data load file: ..//mm-IMDb-database//imbd-data//MovieGenreIGC_v3.xlsx
 -------------------------------------
 -----|EXCEL SCRAPPING STATISTICS|----
 Scrapping rows from 0 to 9000 [total rows = 39966]
@@ -8999,7 +8999,7 @@ Total execution time: 117 minutes
 
 -----|NEW SCRAPPING APP|-------------
 Started at: Wed Dec 16 00:11:31 CET 2020
-Initial data load file: C:\Users\Elir Ray\IdeaProjects\mm-IMDb-database\src\imbd-data\MovieGenreIGC_v3.xlsx
+Initial data load file: ..//mm-IMDb-database//imbd-data//MovieGenreIGC_v3.xlsx
 -------------------------------------
 -----|EXCEL SCRAPPING STATISTICS|----
 Scrapping rows from 0 to 9000 [total rows = 39966]
@@ -9037,7 +9037,7 @@ Total execution time: 0 minutes
 
 -----|NEW SCRAPPING APP|-------------
 Started at: Wed Dec 16 00:42:37 CET 2020
-Initial data load file: C:\Users\Elir Ray\IdeaProjects\mm-IMDb-database\src\imbd-data\MovieGenreIGC_v3.xlsx
+Initial data load file: ..//mm-IMDb-database//imbd-data//MovieGenreIGC_v3.xlsx
 -------------------------------------
 -----|EXCEL SCRAPPING STATISTICS|----
 Scrapping rows from 9000 to 18000 [total rows = 39966]
@@ -18013,7 +18013,7 @@ Total execution time: 101 minutes
 
 -----|NEW SCRAPPING APP|-------------
 Started at: Wed Dec 16 02:39:14 CET 2020
-Initial data load file: C:\Users\Elir Ray\IdeaProjects\mm-IMDb-database\src\imbd-data\MovieGenreIGC_v3.xlsx
+Initial data load file: ..//mm-IMDb-database//imbd-data//MovieGenreIGC_v3.xlsx
 -------------------------------------
 -----|EXCEL SCRAPPING STATISTICS|----
 Scrapping rows from 18000 to 27000 [total rows = 39966]
@@ -26954,7 +26954,7 @@ Total execution time: 100 minutes
 
 -----|NEW SCRAPPING APP|-------------
 Started at: Wed Dec 16 04:33:26 CET 2020
-Initial data load file: C:\Users\Elir Ray\IdeaProjects\mm-IMDb-database\src\imbd-data\MovieGenreIGC_v3.xlsx
+Initial data load file: ..//mm-IMDb-database//imbd-data//MovieGenreIGC_v3.xlsx
 -------------------------------------
 -----|EXCEL SCRAPPING STATISTICS|----
 Scrapping rows from 18000 to 27000 [total rows = 39966]
@@ -26983,7 +26983,7 @@ Total execution time: 0 minutes
 
 -----|NEW SCRAPPING APP|-------------
 Started at: Wed Dec 16 04:38:23 CET 2020
-Initial data load file: C:\Users\Elir Ray\IdeaProjects\mm-IMDb-database\src\imbd-data\MovieGenreIGC_v3.xlsx
+Initial data load file: ..//mm-IMDb-database//imbd-data//MovieGenreIGC_v3.xlsx
 -------------------------------------
 -----|EXCEL SCRAPPING STATISTICS|----
 Scrapping rows from 27000 to 36000 [total rows = 39966]
@@ -35936,7 +35936,7 @@ Total execution time: 82 minutes
 
 -----|NEW SCRAPPING APP|-------------
 Started at: Wed Dec 16 10:55:23 CET 2020
-Initial data load file: C:\Users\Elir Ray\IdeaProjects\mm-IMDb-database\src\imbd-data\MovieGenreIGC_v3.xlsx
+Initial data load file: ..//mm-IMDb-database//imbd-data//MovieGenreIGC_v3.xlsx
 -------------------------------------
 -----|EXCEL SCRAPPING STATISTICS|----
 Scrapping rows from 27000 to 36000 [total rows = 39966]
@@ -36003,7 +36003,7 @@ Total execution time: 0 minutes
 
 -----|NEW SCRAPPING APP|-------------
 Started at: Wed Dec 16 11:13:02 CET 2020
-Initial data load file: C:\Users\Elir Ray\IdeaProjects\mm-IMDb-database\src\imbd-data\MovieGenreIGC_v3.xlsx
+Initial data load file: ..//mm-IMDb-database//imbd-data//MovieGenreIGC_v3.xlsx
 -------------------------------------
 -----|EXCEL SCRAPPING STATISTICS|----
 Scrapping rows from 27000 to 36000 [total rows = 39966]
@@ -36035,7 +36035,7 @@ Total execution time: 0 minutes
 
 -----|NEW SCRAPPING APP|-------------
 Started at: Wed Dec 16 11:28:20 CET 2020
-Initial data load file: C:\Users\Elir Ray\IdeaProjects\mm-IMDb-database\src\imbd-data\MovieGenreIGC_v3.xlsx
+Initial data load file: ..//mm-IMDb-database//imbd-data//MovieGenreIGC_v3.xlsx
 -------------------------------------
 -----|EXCEL SCRAPPING STATISTICS|----
 Scrapping rows from 36000 to 45000 [total rows = 39966]
@@ -39926,4 +39926,34 @@ Writing time: 0.498 seconds
 -------------------------------------
 -----|CLOSING SCRAPPING APP|----------
 Total execution time: 35 minutes
+======================================
+
+
+
+-----|NEW SCRAPPING APP|-------------
+Started at: Wed Dec 16 13:24:24 CET 2020
+Initial data load file: ..//mm-IMDb-database//imbd-data//MovieGenreIGC_v3.xlsx
+-------------------------------------
+-----|EXCEL SCRAPPING STATISTICS|----
+Scrapping rows from 36000 to 45000 [total rows = 39966]
+Successful Excel scraps: 3868/9000
+-------------------------------------
+-----|STARTING WEB SCRAPPING|-----
+-------|Mode: single scrap|-------
+ERROR scrapping film: 173714 (ref: Film not found in the list)
+-------------------------------------
+-----|SCRAPPING STATISTICS|----------
+Total scrapping time: 0 minutes
+Average time per scrap: 0.0 seconds
+Successful scraps: 0/3868
+Uncompleted scraps: 0/3868
+Failed scraps: 1/3868
+Non-scrapped films: [173714]
+-------------------------------------
+-----|BULK TASK FILE|----------------
+Number of tasks created: 0/0
+Writing time: 0.003 seconds
+-------------------------------------
+-----|CLOSING SCRAPPING APP|----------
+Total execution time: 0 minutes
 ======================================

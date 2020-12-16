@@ -8,7 +8,7 @@ import java.util.List;
 public class ScrappingApp {
 
     // Required External references
-    private static final String IMDb_DATA_EXCEL = "C:\\Users\\Elir Ray\\IdeaProjects\\mm-IMDb-database\\src\\imbd-data\\MovieGenreIGC_v3.xlsx";
+    private static final String IMDb_DATA_EXCEL = "..//mm-IMDb-database//imbd-data//MovieGenreIGC_v3.xlsx";
 
     // Execution parameters
     private static final int START_INDEX = 36000;
@@ -26,7 +26,7 @@ public class ScrappingApp {
     public static void main(String[] args) {
 
         ScrappingApp scrappingApp = new ScrappingApp();
-        System.exit(scrappingApp.startFilmScrappingRoutine(FULL_SCRAP));
+        System.exit(scrappingApp.startFilmScrappingRoutine(SINGLE_SCRAP));
 
     }
 
