@@ -15,7 +15,7 @@ import java.util.List;
 public class FilmScraper {
     //Class parameters
     private static final String BULK_TASKS_FILE = "bulkTasks.json";
-    private static final String SCRAP_LOG = "scrap_log.txt";
+    private static final String SCRAP_LOG = "scrappingApp.log";
 
     // Attributes
     private int successfulScraps;
@@ -113,11 +113,11 @@ public class FilmScraper {
      *
      * @param imdbID Id of the film to be scrapped
      */
-    public void scrapFilmByImdbID(int imdbID) {
+    private void scrapFilmByImdbID(int imdbID) {
         long start = System.currentTimeMillis();
         try {
             if (!this.filmList.contains(new Film(imdbID))) {
-                throw new IndexOutOfBoundsException("filmdb.entities.Film not found in the list");
+                throw new IndexOutOfBoundsException("Film " + imdbID + " not found in the list");
             }
             //Find the film to be scrapped
             for (Film film : this.filmList) {

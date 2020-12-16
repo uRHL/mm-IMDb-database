@@ -71,7 +71,7 @@ public class Film {
     public Film(int imdbID) throws InvalidPropertiesFormatException {
         this.status = new ScrapStatus();
         if (imdbID <= 0) {
-            throw new InvalidPropertiesFormatException("Invalid filmdb.entities.Film.imdbID value (negative)");
+            throw new InvalidPropertiesFormatException("Invalid imdbID value (negative)");
         } else {
             this.imdbID = imdbID;
         }
@@ -93,7 +93,7 @@ public class Film {
 
     public void setUrl(String url) {
         if (url == null) {
-            throw new NullPointerException("Impossible to set filmdb.entities.Film.url to null");
+            throw new NullPointerException("Impossible to set url to null");
         } else {
             this.url = url;
         }
@@ -128,7 +128,7 @@ public class Film {
 
     public void setAvgScore(float avgScore) throws InvalidPropertiesFormatException {
         if (avgScore < 0 || avgScore > 10) {
-            throw new InvalidPropertiesFormatException("Invalid filmdb.entities.Film.avgScore value (out of bounds)");
+            throw new InvalidPropertiesFormatException("Invalid avgScore value (out of bounds)");
         } else {
             this.avgScore = avgScore;
         }
@@ -140,7 +140,7 @@ public class Film {
 
     public void setGenres(String[] genres) {
         if (genres == null) {
-            throw new NullPointerException("Impossible to set filmdb.entities.Film.genres to null");
+            throw new NullPointerException("Impossible to set genres to null");
         } else {
             this.genres = genres;
         }
@@ -165,7 +165,6 @@ public class Film {
 
     public void setSynopsis(String synopsis) {
         if (synopsis == null) {
-            //throw new NullPointerException("Impossible to set filmdb.entities.Film.synopsis to null");
             this.synopsis = ATTR_NOT_FOUND;
         } else {
             this.synopsis = synopsis;
@@ -179,7 +178,6 @@ public class Film {
     public void setPlotKeywords(String[] plotKeywords) {
         if (plotKeywords == null || plotKeywords.length == 0) {
             this.plotKeywords = new String[]{ATTR_NOT_FOUND};
-            //throw new NullPointerException("Impossible to set filmdb.entities.Film.plotKeywords to null");
         } else {
             this.plotKeywords = plotKeywords;
         }
@@ -206,7 +204,7 @@ public class Film {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(System.currentTimeMillis());
         if (releaseYear < Film.FIRST_FILM_RELEASE_YEAR || releaseYear > cal.get(Calendar.YEAR)) {
-            throw new InvalidPropertiesFormatException("Invalid filmdb.entities.Film.releaseYear value (out of bounds)");
+            throw new InvalidPropertiesFormatException("Invalid releaseYear value (out of bounds)");
         } else {
             this.releaseYear = releaseYear;
         }
@@ -262,7 +260,7 @@ public class Film {
             /*Sometimes the title (obtained from the excel) contains also the release year.
             Check if the year of this film could be extracted from the excel*/
                 if (releaseYear == DEFAULT_VALUE) {
-                    this.releaseYear = webScraper.getReleaseYear();
+                    this.setReleaseYear(webScraper.getReleaseYear());
                 }
 
                 //The rest of the attributes have to be scraped always

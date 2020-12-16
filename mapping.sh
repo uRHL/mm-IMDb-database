@@ -12,7 +12,7 @@ curl -X PUT "localhost:9200/films?pretty" -H 'Content-Type: application/json' -d
 			"plotKeywords":{"type":"text"},
 			"filmingLocations":{"type":"text"},
 			"originCountry":{"type":"text"},
-			"primaryLanguage":{"type":"text"},
+			"primaryLanguage":{"type":"text"}
 		}
 	}
 }'
