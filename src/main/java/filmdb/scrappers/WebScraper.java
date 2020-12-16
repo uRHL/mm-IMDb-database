@@ -31,22 +31,16 @@ public class WebScraper {
      * @return the year contained in the String date
      */
     public static int parseYear(String date) {
-        String year = "";
-        if (date.contains("(")) {
-            //The date is similar to "TV-Series (2014-2011)" or "TV-Series (2014-)
-            //Extract the year enclosed within parenthesis
-            year = date.substring(date.indexOf("(") + 1, date.indexOf(")")).substring(0, 4);
-        } else {
-            //The date is similar to "12 July 2019"
-            year = date.substring(date.length() - 4);
+        //String year = "";
+        int year = -1;
+        for (int i = 0; i < date.length() - 3; i += 1) {
+            //verify if the substring has a valid year format
+            if (date.substring(i, i + 4).matches("[0-9]{4}")) {
+                year = Integer.parseInt(date.substring(i, i + 4));
+                break;
+            }
         }
-        //verify that the year format is OK
-        if (year.matches("[0-9]{4}")) {
-            return Integer.parseInt(year);
-        } else {
-            return -1;
-        }
-
+        return year;
     }
 
     /**

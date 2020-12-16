@@ -112,14 +112,10 @@ public class Film {
      * @param title String containing the new title
      */
     public void setTitle(String title) throws InvalidPropertiesFormatException {
-        //Check if the title contains something enclosed with parenthesis
-        if (title.contains("(") && title.contains(")")) {
-            //Obtain the title
-            this.setReleaseYear(WebScraper.parseYear(title));
-            //Remove the year and get the title
-            title = title.substring(0, title.indexOf("(")).trim();
-        }
-        this.title = title;
+        //Try to extract the release year from the title
+        this.setReleaseYear(WebScraper.parseYear(title));
+        //Remove the implicit release year
+        this.title =  title.replaceAll("[(0-9)]{6}", "").trim();
     }
 
     public float getAvgScore() {

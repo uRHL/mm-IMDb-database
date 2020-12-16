@@ -16,6 +16,7 @@ public class FilmScraper {
     //Class parameters
     private static final String BULK_TASKS_FILE = "bulkTasks.json";
     private static final String SCRAP_LOG = "scrappingApp.log";
+    private static final double AVG_SCRAP_TIME = 5.7; // measured in seconds
 
     // Attributes
     private int successfulScraps;
@@ -23,8 +24,9 @@ public class FilmScraper {
     private int failedScraps;
     private int totalScraps;
     private long totalScrapTime;
+    private int scrappingProgress;
     private final long initDate;
-    private final ArrayList<Film> filmList;
+    private final ArrayList<Film> scrappedFilms;
     private ArrayList<Integer> notScrappedFilms;
     private final FileOutputStream outputStream = new FileOutputStream(FilmScraper.SCRAP_LOG, true);
 
@@ -40,16 +42,17 @@ public class FilmScraper {
         this.failedScraps = 0;
         this.totalScraps = 0;
         this.totalScrapTime = 0;
+        this.scrappingProgress = 0;
         this.initDate = System.currentTimeMillis();
-        this.filmList = new ArrayList<>();
+        this.scrappedFilms = new ArrayList<>();
         this.notScrappedFilms = new ArrayList<>();
 
         this.writeInitialStats(imdbDataExcelFile);
-        this.filmList.addAll(new ExcelScraper(imdbDataExcelFile).scrapExcel(startIndex, totalFilmsToScrap, this.outputStream));
-        if (this.filmList.isEmpty()) {
+        this.scrappedFilms.addAll(new ExcelScraper(imdbDataExcelFile).scrapExcel(startIndex, totalFilmsToScrap, this.outputStream));
+        if (this.scrappedFilms.isEmpty()) {
             throw new Exception("The excel format is not correct");
         }
-        this.totalScraps = this.filmList.size();
+        this.totalScraps = this.scrappedFilms.size();
     }
 
     /**
@@ -71,34 +74,68 @@ public class FilmScraper {
         long start = System.currentTimeMillis();
         film.initializeUnsetAttributes();
         this.writeFilmScrappingStats(film.getImdbID(), System.currentTimeMillis() - start, film.getStatus());
+        this.updateScrappingProgress();
         if (!film.getStatus().isCompleted()) {
             this.notScrappedFilms.add(film.getImdbID());
-            if (film.getStatus().isServerError()) {
-                throw new RuntimeException("ACCESS DENIED OR SERVER DOWN");
-            }
         }
-
-
     }
 
     /**
-     * Provides the statistical information provided by {@link FilmScraper#successfulScraps} VS {@link FilmScraper#totalScraps}
+     * Provides the ratio between the specified parameter and {@link FilmScraper#totalScraps}
      *
      * @return A String containing the stats of the {@link FilmScraper} with the format "#successful/#total"
      */
-    public String getOverallRatio(int numerator) {
+    private String getOverallRatio(int numerator) {
         return numerator + "/" + this.totalScraps;
     }
 
     /**
-     * Scraps all the information of the films created from the IMDb data excel
+     * Updates the {@link FilmScraper#scrappingProgress}. The value is only modified when the progress has
+     * increased, at least, 1%. Additionally prints, in the standard output, the current progress of the scrapping process
+     */
+    private void updateScrappingProgress() {
+
+        double currentProgress = ((double)(this.successfulScraps + this.uncompletedScraps + this.failedScraps) / this.totalScraps) * 100;
+        if (currentProgress > this.scrappingProgress) {
+            this.scrappingProgress++;
+            System.out.println("****** Scrapping progress: " + this.scrappingProgress + "%");
+        }
+    }
+
+    /**
+     * Prints, in the standard output, the estimated execution time of the current scrapping process
+     *
+     * @param filmsToScrap Number of films to be scrapped
+     */
+    private void printEstimatedExecutionTime(int filmsToScrap) {
+        int numCores = Runtime.getRuntime().availableProcessors();
+        double dExeTime = AVG_SCRAP_TIME * filmsToScrap;
+        if (filmsToScrap > 1) {
+            //When more than one film is to be scrapped, the process is parallelized using all the available cores of the CPU
+            dExeTime /= numCores;
+        }
+
+        String sExeTime = "****** New Scrapping process started at " + new Date(System.currentTimeMillis()) + "\r\n****** Estimated execution time: ";
+
+        if (dExeTime / 60 < 0) { //less than one minute
+            sExeTime += dExeTime + " seconds";
+        } else {
+            sExeTime += String.format("%.2f", dExeTime / 60) + " minutes";
+        }
+        System.out.println(sExeTime);
+    }
+
+    /**
+     * Scraps all the information of the films parsed from the IMDb data excel. The scrapping process is
+     * parallelized using all the available CPU cores
      */
     public void scrapAllFilms() {
         long start = System.currentTimeMillis();
         try {
+            this.printEstimatedExecutionTime(this.totalScraps);
             this.outputStream.write(("-----|STARTING WEB SCRAPPING|-----\r\n").getBytes(StandardCharsets.UTF_8));
             this.outputStream.write(("--------|Mode: full scrap|--------\r\n").getBytes(StandardCharsets.UTF_8));
-            this.filmList.parallelStream().forEach(this::scrapRemainingAttr);
+            this.scrappedFilms.parallelStream().forEach(this::scrapRemainingAttr);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -109,18 +146,18 @@ public class FilmScraper {
     }
 
     /**
-     * Scraps a single film given its index in the {@link FilmScraper#filmList}
+     * Scraps a single film given its index in the {@link FilmScraper#scrappedFilms}
      *
      * @param imdbID Id of the film to be scrapped
      */
     private void scrapFilmByImdbID(int imdbID) {
         long start = System.currentTimeMillis();
         try {
-            if (!this.filmList.contains(new Film(imdbID))) {
+            if (!this.scrappedFilms.contains(new Film(imdbID))) {
                 throw new IndexOutOfBoundsException("Film " + imdbID + " not found in the list");
             }
             //Find the film to be scrapped
-            for (Film film : this.filmList) {
+            for (Film film : this.scrappedFilms) {
                 if (film.getImdbID() == imdbID) {
                     this.scrapRemainingAttr(film);
                 }
@@ -130,9 +167,16 @@ public class FilmScraper {
         }
     }
 
+    /**
+     * Scraps a single film given its index in the {@link FilmScraper#scrappedFilms}
+     *
+     * @param imdbID Id of the film to be scrapped
+     * @see FilmScraper#scrapFilmByImdbID(int)
+     */
     public void scrapSingleFilm(int imdbID) {
         long start = System.currentTimeMillis();
         try {
+            this.printEstimatedExecutionTime(1);
             this.outputStream.write(("-----|STARTING WEB SCRAPPING|-----\r\n").getBytes(StandardCharsets.UTF_8));
             this.outputStream.write(("-------|Mode: single scrap|-------\r\n").getBytes(StandardCharsets.UTF_8));
             this.scrapFilmByImdbID(imdbID);
@@ -146,7 +190,7 @@ public class FilmScraper {
     }
 
     /**
-     * Scraps a given set of films
+     * Scraps a given set of films. The scrapping process is parallelized using all the available CPU cores
      *
      * @param list List containing the imdbIDs of the films to be scrapped
      * @throws Exception Raised when scrapping the attributes from the web
@@ -155,6 +199,7 @@ public class FilmScraper {
 
         long start = System.currentTimeMillis();
         try {
+            this.printEstimatedExecutionTime(list.size());
             this.outputStream.write(("-----|STARTING WEB SCRAPPING|-----\r\n").getBytes(StandardCharsets.UTF_8));
             this.outputStream.write(("------|Mode: partial scrap|-------\r\n").getBytes(StandardCharsets.UTF_8));
 
@@ -293,7 +338,7 @@ public class FilmScraper {
             long start = System.currentTimeMillis();
             DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
                     new FileOutputStream(BULK_TASKS_FILE, true)));
-            for (Film film : this.filmList) {
+            for (Film film : this.scrappedFilms) {
                 if (film.getStatus().isCompleted()) {
                     out.writeBytes("{\"index\":{}}\r\n");
                     out.writeBytes(film.toJson() + "\r\n");
