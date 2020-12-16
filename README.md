@@ -3,7 +3,7 @@ This is a NoSQL database for films. The films' information is scrapped from the 
 
 # Obtaining the required data
 
-## Attributes scrapped from the Excel
+## (basic) Attributes scrapped from the Excel
 
 - imdbID 
 - filmURL 
