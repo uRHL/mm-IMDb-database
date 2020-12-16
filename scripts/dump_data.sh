@@ -1,0 +1,1 @@
+curl -XPOST -H "Content-Type: application/json" "localhost:9200/film_test/_bulk?pretty" --data-binary "@bulkTasks.json"
