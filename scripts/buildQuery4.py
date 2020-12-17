@@ -4,7 +4,7 @@ from pathlib import Path
 inputFile = "../output/spanish-word-dic.json"
 outputFile = "./queries/query4.json"
 query_words = ""
-WORDS_PER_STRING_QUERY = 200
+WORDS_PER_STRING_QUERY = 250
 counter = 0
 
 query_obj = {
@@ -36,6 +36,7 @@ if (Path(outputFile).is_file()) == False:
                             "query": ""
                         }
                     }
+                    print(query_words)
                     new_query_string["query_string"]["query"] = query_words
                     query_obj["query"]["bool"]["should"].append(new_query_string)
                     query_words = ""
