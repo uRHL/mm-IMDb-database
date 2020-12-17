@@ -95,4 +95,13 @@ public class WikiScraper {
         return elem.attr("title").length() > 1 && !elem.attr("title").equals("ISBN") && !elem.attr("title").equals("ISSN") && !elem.parent().hasClass("citation") && !elem.text().matches("[0-9\\-]*") && elem.text().length() != 0;
 
     }
+
+    private static void removeTildes(Strign text){
+        text = text.replace("Á", "A").replace("á", "a");
+        text = text.replace("É", "E").replace("é", "e");
+        text = text.replace("Í", "I").replace("í", "i");
+        text = text.replace("Ó", "O").replace("ó", "o");
+        text = text.replace("Ú", "U").replace("ú", "u");
+        return text;
+    }
 }

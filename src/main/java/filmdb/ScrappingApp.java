@@ -25,8 +25,9 @@ public class ScrappingApp {
 
     public static void main(String[] args) {
 
-        ScrappingApp scrappingApp = new ScrappingApp();
-        System.exit(scrappingApp.startFilmScrappingRoutine(SINGLE_SCRAP));
+        //ScrappingApp scrappingApp = new ScrappingApp();
+        //System.exit(scrappingApp.startFilmScrappingRoutine(SINGLE_SCRAP));
+        WikiScraper.generateSpanishDictionary();
 
     }
 
