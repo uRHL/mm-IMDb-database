@@ -126,7 +126,7 @@ public class WebScraper {
             List<String> mainActors = new ArrayList<>();
 
             for (Element elem : elements) {
-                String actorName = elem.text();
+                String actorName = removeNonAsciiChars(elem.text());
                 elem.html();
                 if (!actorName.equals("")) {
                     mainActors.add(actorName);
@@ -173,7 +173,7 @@ public class WebScraper {
             WebScraper keywordScraper = new WebScraper(this.getUrlByKeyword("keywords"));
             Elements elements = keywordScraper.getElementsLinkStartingBy("/search/keyword");
             for (Element elem : elements) {
-                plotKeywords.add(elem.text());
+                plotKeywords.add(removeNonAsciiChars(elem.text()));
             }
             return plotKeywords.toArray(new String[0]);
         } catch (Exception e) {
@@ -189,7 +189,7 @@ public class WebScraper {
      */
     public String getCountryOfOrigin() {
         try {
-            return getElemLinkContaining("country_of_origin").text();
+            return removeNonAsciiChars(getElemLinkContaining("country_of_origin").text());
         } catch (Exception e) {
             System.out.println("UNSUCCESSFUL function 'getOriginCountry' (ref: " + e + ")");
             return null;
@@ -206,7 +206,7 @@ public class WebScraper {
             ArrayList<String> primaryLanguages = new ArrayList<>();
             Elements elements = this.getElementsLinkContaining("primary_language");
             for (Element elem : elements) {
-                primaryLanguages.add(elem.text().trim());
+                primaryLanguages.add(removeNonAsciiChars(elem.text().trim()));
             }
             return primaryLanguages.toArray(new String[0]);
         } catch (Exception e) {
@@ -227,7 +227,7 @@ public class WebScraper {
             Elements elements = locationScraper.getElementsLinkContaining("locations=");
 
             for (Element elem : elements) {
-                locations.add(elem.text());
+                locations.add(removeNonAsciiChars(elem.text()));
             }
             if (locations.isEmpty()) {
                 throw new Exception("No locations found");
@@ -339,7 +339,7 @@ public class WebScraper {
         Elements elements = this.doc.select(selector);
 
         for (Element elem : elements) {
-            list.add(elem.text());
+            list.add(removeNonAsciiChars(elem.text()));
         }
         return list;
     }
