@@ -1,0 +1,25 @@
+{
+    "query": {
+        "bool": {
+            "must": [
+                {
+                    "query_string": {
+                        "fields": [
+                            "title^2",
+                            "synopsis",
+                            "plotKeywords^3"
+                        ],
+                        "query": "(Aardvark) OR (Albatross) OR (Alligator) OR (Alpaca) OR (Ant) OR (Anteater) OR (Antelope) OR (Ape) OR (Armadillo) OR (Donkey) OR (Baboon) OR (Badger) OR (Barracuda) OR (Bat) OR (Bear) OR (Beaver) OR (Bee) OR (Bison) OR (Boar) OR (Buffalo) OR (Butterfly) OR (Camel) OR (Capybara) OR (Caribou) OR (Cassowary) OR (Cat) OR (Caterpillar) OR (Cattle) OR (Chamois) OR (Cheetah) OR (Chicken) OR (Chimpanzee) OR (Chinchilla) OR (Chough) OR (Clam) OR (Cobra) OR (Cockroach) OR (Cod) OR (Cormorant) OR (Coyote) OR (Crab) OR (Crane) OR (Crocodile) OR (Crow) OR (Curlew) OR (Deer) OR (Dinosaur) OR (Dog) OR (Dogfish) OR (Dolphin) OR (Dotterel) OR (Dove) OR (Dragonfly) OR (Duck) OR (Dugong) OR (Dunlin) OR (Eagle) OR (Echidna) OR (Eel) OR (Eland) OR (Elephant) OR (Elk) OR (Emu) OR (Falcon) OR (Ferret) OR (Finch) OR (Fish) OR (Flamingo) OR (Fly) OR (Fox) OR (Frog) OR (Gaur) OR (Gazelle) OR (Gerbil) OR (Giraffe) OR (Gnat) OR (Gnu) OR (Goat) OR (Goldfinch) OR (Goldfish) OR (Goose) OR (Gorilla) OR (Goshawk) OR (Grasshopper) OR (Grouse) OR (Guanaco) OR (Gull) OR (Hamster) OR (Hare) OR (Hawk) OR (Hedgehog) OR (Heron) OR (Herring) OR (Hippopotamus) OR (Hornet) OR (Horse) OR (Human) OR (Hummingbird) OR (Hyena) OR (Ibex) OR (Ibis) OR (Jackal) OR (Jaguar) OR (Jay) OR (Jellyfish) OR (Kangaroo) OR (Kingfisher) OR (Koala) OR (Kookabura) OR (Kouprey) OR (Kudu) OR (Lapwing) OR (Lark) OR (Lemur) OR (Leopard) OR (Lion) OR (Llama) OR (Lobster) OR (Locust) OR (Loris) OR (Louse) OR (Lyrebird) OR (Magpie) OR (Mallard) OR (Manatee) OR (Mandrill) OR (Mantis) OR (Marten) OR (Meerkat) OR (Mink) OR (Mole) OR (Mongoose) OR (Monkey) OR (Moose) OR (Mosquito) OR (Mouse) OR (Mule) OR (Narwhal) OR (Newt) OR (Nightingale) OR (Octopus) OR (Okapi) OR (Opossum) OR (Oryx) OR (Ostrich) OR (Otter) OR (Owl) OR (Oyster) OR (Panther) OR (Parrot) OR (Partridge) OR (Peafowl) OR (Pelican) OR (Penguin) OR (Pheasant) OR (Pig) OR (Pigeon) OR (Pony) OR (Porcupine) OR (Porpoise) OR (Quail) OR (Quelea) OR (Quetzal) OR (Rabbit) OR (Raccoon) OR (Rail) OR (Ram) OR (Rat) OR (Raven) OR (Red deer) OR (Red panda) OR (Reindeer) OR (Rhinoceros) OR (Rook) OR (Salamander) OR (Salmon) OR (Sand Dollar) OR (Sandpiper) OR (Sardine) OR (Scorpion) OR (Seahorse) OR (Seal) OR (Shark) OR (Sheep) OR (Shrew) OR (Skunk) OR (Snail) OR (Snake) OR (Sparrow) OR (Spider) OR (Spoonbill) OR (Squid) OR (Squirrel) OR (Starling) OR (Stingray) OR (Stinkbug) OR (Stork) OR (Swallow) OR (Swan) OR (Tapir) OR (Tarsier) OR (Termite) OR (Tiger) OR (Toad) OR (Trout) OR (Turkey) OR (Turtle) OR (Viper) OR (Vulture) OR (Wallaby) OR (Walrus) OR (Wasp) OR (Weasel) OR (Whale) OR (Wildcat) OR (Wolf) OR (Wolverine) OR (Wombat) OR (Woodcock) OR (Woodpecker) OR (Worm) OR (Wren) OR (Yak) OR (Zebra)"
+                    }
+                },
+                {
+                    "range": {
+                        "releaseYear": {
+                            "gte": 1950
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

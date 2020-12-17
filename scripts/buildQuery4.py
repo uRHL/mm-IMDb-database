@@ -3,23 +3,16 @@ from pathlib import Path
 
 inputFile = "../output/spanish-word-dic.json"
 outputFile = "./queries/query4.json"
-string_query = ""
+query_words = ""
+WORDS_PER_STRING_QUERY = 200
 counter = 0
 
 query_obj = {
-    "query": {
-        "bool": {
-            "must": [
-                {"query_string": {
-                    "fields": ["title^2", "synopsis", "plotKeywords^3"],
-                    "query": ""}
-                },
-                {"range": {"releaseYear": {"gte": 1950}}
-
-                 }
-            ]
-        }
+  "query" : {
+      "bool" : {
+      "should" : []
     }
+  }
 }
 
 if (Path(outputFile).is_file()) == False:
@@ -27,18 +20,42 @@ if (Path(outputFile).is_file()) == False:
     try:
         with open(inputFile, "r") as reader:
 
-            wordList = json.loads(reader.read())
-            print(len(wordList))
+            wordList = json.loads(reader.read())                               
+            
             for elem in wordList:
-                if counter == (len(wordList) - 1):
+                if counter == (len(wordList) - 1) or (counter%WORDS_PER_STRING_QUERY == WORDS_PER_STRING_QUERY-1):
                     nextClause = ""
                 else:
                     nextClause = " OR "
+                if (counter%WORDS_PER_STRING_QUERY == 0) and (counter > 0):
+                    #Every WORDS_PER_STRING_QUERY words a new query string is added to the bool query
+                    new_query_string = {
+                        "query_string" : {
+                            "fields" : ["title", "synopsis", "plotKeywords", "filmingLocations", "originCountry", "primaryLanguages"],
+                            "query" : ""
+                        }
+                    }
+                    new_query_string["query_string"]["query"] = query_words
+                    query_obj["query"]["bool"]["should"].append(new_query_string)                    
+                    query_words = ""
+                # read the next word
                 word = elem.replace("'", "").replace(",", "").strip()
-                string_query += "(" + word + ")" + nextClause
+                query_words += "(" + word + ")" + nextClause
                 counter += 1
             # end for loop
-            query_obj["query"]["bool"]["must"][0]["query_string"]["query"] = string_query
+
+            #Add the remaining words to the query, if any
+            if (len(query_words)>0):
+                new_query_string = {
+                        "query_string" : {
+                            "fields" : ["title", "synopsis", "plotKeywords", "filmingLocations", "originCountry", "primaryLanguages"],
+                            "query" : ""
+                        }
+                    }
+                new_query_string["query_string"]["query"] = query_words
+                query_obj["query"]["bool"]["should"].append(new_query_string)
+
+            # generate the json request
             with open(outputFile, "w") as writer:
                 writer.write(json.dumps(query_obj, indent=4))
     finally:

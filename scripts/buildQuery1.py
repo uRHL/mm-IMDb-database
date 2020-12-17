@@ -3,7 +3,7 @@ from pathlib import Path
 
 inputFile = "../output/animals.json"
 outputFile = "./queries/query1.json"
-string_query = ""
+query_words = ""
 counter = 0
 
 query_obj = {
@@ -38,10 +38,10 @@ if (Path(outputFile).is_file()) == False:
                     else:
                         nextClause = " OR "
                     animalName = line.replace("\"", "").replace(",", "").strip()
-                    string_query += "(" + animalName + ")" + nextClause
+                    query_words += "(" + animalName + ")" + nextClause
                 counter += 1
             # end for loop
-            query_obj["query"]["bool"]["must"][0]["query_string"]["query"] = string_query
+            query_obj["query"]["bool"]["must"][0]["query_string"]["query"] = query_words
             with open(outputFile, "w") as writer:
                 writer.write(json.dumps(query_obj, indent=4))
 

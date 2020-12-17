@@ -159,7 +159,7 @@ The source code of the script can be found in ***dump_data.sh***. The next comma
 ### 3. Films about ‘crimes’available in the collection && number of these films per year
 ### 4. Films with social contents in Spain and LatinAmerica
 First, a dictionary of spanish words was generated from 3 different Wikipedia pages: [1000 basic Spanish words](https://es.wiktionary.org/wiki/Ap%C3%A9ndice:1000_palabras_b%C3%A1sicas_en_espa%C3%B1ol), [History of Spain](https://es.wikipedia.org/wiki/Historia_de_Espa%C3%B1a), [History of South America](https://es.wikipedia.org/wiki/Historia_de_Sudam%C3%A9rica)
-The dictionary is named "spanish-word-dic.json".  
+The dictionary is named ***spanish-word-dic.json***, anc contains 2851 words.
 
 
 ## Additional information
