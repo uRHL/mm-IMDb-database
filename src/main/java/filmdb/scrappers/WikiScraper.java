@@ -29,7 +29,7 @@ public class WikiScraper {
             Element mainSection = Jsoup.connect(WIKI_ESP_WORDS).get().selectFirst("div[id=mw-content-text]");
             Elements elements = mainSection.select("a[href~=/wiki/[\\w\\d\\W]]");
             for (Element elem : elements) {
-                spanishWords.add(removeSpecialSpanishCharacters(elem.text()));
+                spanishWords.add(removeSpecialCharacters(elem.text()));
             }
             //Scrap the wiki page: History of Spain
             spanishWords.addAll(WikiScraper.scrapComplexWikiPage(WIKI_ESP_HISTORY));
@@ -57,7 +57,7 @@ public class WikiScraper {
             Elements elements = mainSection.select("a[href~=/wiki/[\\w\\d\\W]]");
             for (Element elem : elements) {
                 if (WikiScraper.checkElementAttributes(elem) && (!words.contains(elem.text()))) {
-                    words.add(removeSpecialSpanishCharacters(elem.text()));
+                    words.add(removeSpecialCharacters(elem.text()));
                 }
             }
         } catch (IOException e) {
@@ -95,11 +95,11 @@ public class WikiScraper {
     }
 
     /**
-     * Removes any Spanish character (tildes, ñ, ç) present in the provided string
-     * @param text String whose tildes whose special Spanish characters will be removed
-     * @return A new string without special Spanish characters
+     * Removes any special character (tildes, ñ, ç, parenthesis, brackets,colons, semicolons, dashes) present in the provided string
+     * @param text String whose tildes whose special characters will be removed
+     * @return A new string without special characters
      */
-    private static String removeSpecialSpanishCharacters(String text){
+    private static String removeSpecialCharacters(String text){
         text = text.replace("Á", "A").replace("á", "a");
         text = text.replace("É", "E").replace("é", "e");
         text = text.replace("Í", "I").replace("í", "i");
@@ -107,6 +107,9 @@ public class WikiScraper {
         text = text.replace("Ú", "U").replace("ú", "u");
         text = text.replace("Ñ", "N").replace("ñ", "n");
         text = text.replace("Ç", "C").replace("ç", "c");
+        // Remove the remaining brackets, colons, semicolons, etc
+        text = text.replaceAll("[()\\[\\]}{.,:;]", "").replaceAll("[_\\-]", " ");
+        // Finally remove any non-ascii character that appears in the text
         text = WebScraper.removeNonAsciiChars(text);
         return text;
     }
