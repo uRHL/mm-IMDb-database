@@ -107,6 +107,7 @@ public class WikiScraper {
         text = text.replace("Ú", "U").replace("ú", "u");
         text = text.replace("Ñ", "N").replace("ñ", "n");
         text = text.replace("Ç", "C").replace("ç", "c");
+        text = WebScraper.removeNonAsciiChars(text);
         return text;
     }
 }

@@ -50,7 +50,7 @@ public class WebScraper {
      * @param text String whose non-Ascii chars will be removed
      * @return a new String without non-ascii chars
      */
-    private static String removeNonAsciiChars(String text) {
+    public static String removeNonAsciiChars(String text) {
         try {
             /*
             TODO: replace each non-ascii char by its corresponding readable representation

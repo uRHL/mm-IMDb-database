@@ -30,8 +30,6 @@ public class ScrappingApp {
 
         ScrappingApp scrappingApp = new ScrappingApp();
         System.exit(scrappingApp.startFilmScrappingRoutine(SINGLE_SCRAP));
-
-
     }
 
     /**
