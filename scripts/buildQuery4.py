@@ -8,29 +8,29 @@ counter = 0
 
 query_obj = {
     "query": {
-      "bool": {
-        "must": [
-          { "query_string": {
-            "fields": ["title^2", "synopsis", "plotKeywords^3"], 
-            "query": ""}
-          },
-          { "range": { "releaseYear": { "gte": 1950 }}
-            
-          }
-        ]
-      }
+        "bool": {
+            "must": [
+                {"query_string": {
+                    "fields": ["title^2", "synopsis", "plotKeywords^3"],
+                    "query": ""}
+                },
+                {"range": {"releaseYear": {"gte": 1950}}
+
+                 }
+            ]
+        }
     }
-  }
+}
 
 if (Path(outputFile).is_file()) == False:
     # the query request has not been created yet. Create it
     try:
         with open(inputFile, "r") as reader:
-            
+
             wordList = json.loads(reader.read())
             print(len(wordList))
             for elem in wordList:
-                if counter == (len(wordList)-1):
+                if counter == (len(wordList) - 1):
                     nextClause = ""
                 else:
                     nextClause = " OR "
@@ -42,6 +42,6 @@ if (Path(outputFile).is_file()) == False:
             with open(outputFile, "w") as writer:
                 writer.write(json.dumps(query_obj, indent=4))
     finally:
-        writer.close()        
+        writer.close()
         reader.close()
-#end of the script
+# end of the script

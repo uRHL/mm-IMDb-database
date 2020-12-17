@@ -1,6 +1,7 @@
 package filmdb;
 
 import filmdb.scrappers.FilmScraper;
+import filmdb.scrappers.WikiScraper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +26,11 @@ public class ScrappingApp {
 
     public static void main(String[] args) {
 
-        //ScrappingApp scrappingApp = new ScrappingApp();
-        //System.exit(scrappingApp.startFilmScrappingRoutine(SINGLE_SCRAP));
-        WikiScraper.generateSpanishDictionary();
+        //WikiScraper.generateSpanishDictionary();
+
+        ScrappingApp scrappingApp = new ScrappingApp();
+        System.exit(scrappingApp.startFilmScrappingRoutine(SINGLE_SCRAP));
+
 
     }
 

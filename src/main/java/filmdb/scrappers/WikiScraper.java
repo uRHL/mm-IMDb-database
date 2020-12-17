@@ -5,10 +5,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +14,7 @@ public class WikiScraper {
     private static final String WIKI_ESP_WORDS = "https://es.wiktionary.org/wiki/Ap%C3%A9ndice:1000_palabras_b%C3%A1sicas_en_espa%C3%B1ol";
     private static final String WIKI_ESP_HISTORY = "https://es.wikipedia.org/wiki/Historia_de_Espa%C3%B1a";
     private static final String WIKI_LATIN_HISTORY = "https://es.wikipedia.org/wiki/Historia_de_Sudam%C3%A9rica";
-    private static final String DICTIONARY_NAME = "spanish-word-dic.json";
+    private static final String DICTIONARY_NAME = "..//mm-IMDb-database//output//spanish-word-dic.json";
 
     /**
      * Generates an spanish-word dictionary scrapping the predefined Wikipedia URLs
@@ -32,7 +29,7 @@ public class WikiScraper {
             Element mainSection = Jsoup.connect(WIKI_ESP_WORDS).get().selectFirst("div[id=mw-content-text]");
             Elements elements = mainSection.select("a[href~=/wiki/[\\w\\d\\W]]");
             for (Element elem : elements) {
-                spanishWords.add(elem.text());
+                spanishWords.add(removeSpecialSpanishCharacters(elem.text()));
             }
             //Scrap the wiki page: History of Spain
             spanishWords.addAll(WikiScraper.scrapComplexWikiPage(WIKI_ESP_HISTORY));
@@ -60,7 +57,7 @@ public class WikiScraper {
             Elements elements = mainSection.select("a[href~=/wiki/[\\w\\d\\W]]");
             for (Element elem : elements) {
                 if (WikiScraper.checkElementAttributes(elem) && (!words.contains(elem.text()))) {
-                    words.add(elem.text());
+                    words.add(removeSpecialSpanishCharacters(elem.text()));
                 }
             }
         } catch (IOException e) {
@@ -76,9 +73,10 @@ public class WikiScraper {
      */
     private static void generateJsonDictionary(List<String> wordList) {
         try {
+            File dictionaryFile = new File(DICTIONARY_NAME);
             DataOutputStream out = new DataOutputStream(new BufferedOutputStream(
-                    new FileOutputStream(WikiScraper.DICTIONARY_NAME)));
-            out.writeUTF(new Gson().toJson(wordList));
+                    new FileOutputStream(dictionaryFile.getCanonicalPath())));
+            out.write((new Gson().toJson(wordList, ArrayList.class)).getBytes());
             out.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -92,16 +90,23 @@ public class WikiScraper {
      * @return True if the element matches all the attribute requirements. False otherwise
      */
     private static boolean checkElementAttributes(Element elem) {
-        return elem.attr("title").length() > 1 && !elem.attr("title").equals("ISBN") && !elem.attr("title").equals("ISSN") && !elem.parent().hasClass("citation") && !elem.text().matches("[0-9\\-]*") && elem.text().length() != 0;
+        return elem.attr("title").length() > 1 && !elem.attr("title").equals("ISBN") && !elem.attr("title").equals("ISSN") && !elem.parent().hasClass("citation") && !elem.text().matches("[0-9\\-]*") && !elem.text().matches("[A-Z]{1}[0-9]*") && elem.text().length() != 0;
 
     }
 
-    private static void removeTildes(Strign text){
+    /**
+     * Removes any Spanish character (tildes, ñ, ç) present in the provided string
+     * @param text String whose tildes whose special Spanish characters will be removed
+     * @return A new string without special Spanish characters
+     */
+    private static String removeSpecialSpanishCharacters(String text){
         text = text.replace("Á", "A").replace("á", "a");
         text = text.replace("É", "E").replace("é", "e");
         text = text.replace("Í", "I").replace("í", "i");
         text = text.replace("Ó", "O").replace("ó", "o");
         text = text.replace("Ú", "U").replace("ú", "u");
+        text = text.replace("Ñ", "N").replace("ñ", "n");
+        text = text.replace("Ç", "C").replace("ç", "c");
         return text;
     }
 }
