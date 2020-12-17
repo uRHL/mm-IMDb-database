@@ -39,19 +39,19 @@ while [ $selected_opt -gt 0 ]; do
     1)
         echo -e "\nYou selected $first_opt\n$results_prompt\n"
         echo "$animal_names"
-        curl -X GET "localhost:9200/films/_search?size=10&&pretty" -H 'Content-Type: application/json' -d "$first_query"
+        curl -X GET "localhost:9200/films/_search?pretty" -H 'Content-Type: application/json' -d "$first_query"
         ;;
     2)
         echo -e "\nYou selected $second_opt\n$results_prompt\n"
-        curl -X GET "localhost:9200/films/_search?size=10&&pretty" -H 'Content-Type: application/json' -d "$second_query"
+        curl -X GET "localhost:9200/films/_search?pretty" -H 'Content-Type: application/json' -d "$second_query"
         ;;        
     3)
         echo -e "\nYou selected $third_opt\n$results_prompt\n"
-        curl -X GET "localhost:9200/films/_search?size=10&&pretty" -H 'Content-Type: application/json' -d "$third_query"
+        curl -X GET "localhost:9200/films/_search?pretty" -H 'Content-Type: application/json' -d "$third_query"
         ;;
     4)
         echo -e "\nYou selected $fourth_opt\n$results_prompt\n"
-        curl -X GET "localhost:9200/films/_search?size=10&&pretty" -H 'Content-Type: application/json' -d "$fourth_query"
+        curl -X GET "localhost:9200/films/_search?pretty" -H 'Content-Type: application/json' -d "$fourth_query"
         echo "$social_contents"
         ;;
     *)

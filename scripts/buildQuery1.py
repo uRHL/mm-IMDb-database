@@ -7,6 +7,7 @@ query_words = ""
 counter = 0
 
 query_obj = {
+    "size" : 10,
     "query": {
         "bool": {
             "must": [
