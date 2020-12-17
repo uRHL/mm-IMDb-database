@@ -26,10 +26,10 @@ public class ScrappingApp {
 
     public static void main(String[] args) {
 
-        //WikiScraper.generateSpanishDictionary();
+        new WikiScraper().generateSpanishDictionary();
 
-        ScrappingApp scrappingApp = new ScrappingApp();
-        System.exit(scrappingApp.startFilmScrappingRoutine(SINGLE_SCRAP));
+//        ScrappingApp scrappingApp = new ScrappingApp();
+//        System.exit(scrappingApp.startFilmScrappingRoutine(SINGLE_SCRAP));
     }
 
     /**

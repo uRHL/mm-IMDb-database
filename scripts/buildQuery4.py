@@ -8,7 +8,7 @@ WORDS_PER_STRING_QUERY = 250
 counter = 0
 
 query_obj = {
-    "size" : 10,
+    "size": 10,
     "query": {
         "bool": {
             "must": []
