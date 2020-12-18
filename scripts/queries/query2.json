@@ -1,0 +1,21 @@
+{
+    "size": 0, 
+    "aggs": {
+        "adventure_agg": {
+            "filter": {
+                "query_string": {
+                    "fields": ["genres^2", "plotKeywords"], 
+                    "query": "(adventure) OR (adventures)"
+                }
+            }, 
+            "aggs": {
+                "top_20_adventure_actors": {
+                    "terms": {
+                        "field": "mainActors",
+                        "size": 20
+                    }
+                }
+            }
+        }
+    }
+}

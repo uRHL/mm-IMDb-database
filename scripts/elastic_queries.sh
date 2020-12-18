@@ -6,7 +6,7 @@ exit_program="0. Exit the program"
 
 # 1st query parameters
 first_opt="1. Films about animals produced since 1950"
-# Build the first query if it does not exist
+# Build the request object, if it does not exist
 python3 buildQuery1.py
 first_query=$(cat ./queries/query1.json)
 
@@ -20,25 +20,28 @@ third_query=$(cat ./queries/query3.json)
 
 # 4th query parameters
 fourth_opt="4. Films with social contents in Spain and LatinAmerica."
-# Build the first query if it does not exist
+# Build the request object, if it does not exist
 python3 buildQuery4.py
 fourth_query=$(cat ./queries/query4.json)
-#
+
+# 5th query parameters
+fifth_opt="5. Test the results of Query 2: number of Frank Welker films"
+fifth_query=$(cat ./queries/testQuery2.json)
+
 execute_query=""
-test=$(cat ./queries/query1.json)
 
 #Defaul value
 selected_opt=9
+
 while [ $selected_opt -gt 0 ]; do
-    echo -e "$prompt\n\n$first_opt\n$second_opt\n$third_opt\n$fourth_opt\n\n$exit_program"
+    echo -e "$prompt\n\n$first_opt\n$second_opt\n$third_opt\n$fourth_opt\n$fifth_opt\n\n$exit_program"
     read selected_opt
     case $selected_opt in
     0)
         echo -e "\nYou selected $exit_program\nProgram completed"
         ;;
     1)
-        echo -e "\nYou selected $first_opt\n$results_prompt\n"
-        echo "$animal_names"
+        echo -e "\nYou selected $first_opt\n$results_prompt\n"        
         curl -X GET "localhost:9200/films/_search?pretty" -H 'Content-Type: application/json' -d "$first_query"
         ;;
     2)
@@ -51,8 +54,11 @@ while [ $selected_opt -gt 0 ]; do
         ;;
     4)
         echo -e "\nYou selected $fourth_opt\n$results_prompt\n"
-        curl -X GET "localhost:9200/films/_search?pretty" -H 'Content-Type: application/json' -d "$fourth_query"
-        echo "$social_contents"
+        curl -X GET "localhost:9200/films/_search?pretty" -H 'Content-Type: application/json' -d "$fourth_query"        
+        ;;
+    5)
+        echo -e "\nYou selected $fifth_opt\n$results_prompt\n"
+        curl -X GET "localhost:9200/films/_count?pretty" -H 'Content-Type: application/json' -d "$fifth_query"        
         ;;
     *)
         #non recognized option. Restore the default value

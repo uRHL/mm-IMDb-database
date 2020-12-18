@@ -1,0 +1,20 @@
+{
+    "size": 10, 
+    "query": {
+        "query_string": {
+            "fields": ["genres^2", "plotKeywords"], 
+            "query": "(crime) OR (crimes)"
+        }
+    },
+    "aggs": {
+        "Terms_Aggregation" : {
+            "terms": { 
+                "field": "releaseYear",
+                "size": 150,
+                "order": {
+                    "_key": "desc"
+                }
+            }
+        }
+    }
+}

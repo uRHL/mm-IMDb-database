@@ -12,6 +12,7 @@ i=0
 mkdir $tempDir
 cd $tempDir/
 split -l $lines_per_file -d $originaBulkFile
+
 #count the total number of segments created from the original file
 total_files=$(find . -maxdepth 1 -type f | wc -l)
 
@@ -24,6 +25,7 @@ while [ $i -lt $total_files ]; do
     (( i += 1 ))
     curl -H "Content-Type: application/x-ndjson" -XPOST localhost:9200/films/_bulk?pretty --data-binary "$tempFileName"    
 done
+
 #temporal files no longer needed. Delete them
 cd ..
 rm -r $tempDir

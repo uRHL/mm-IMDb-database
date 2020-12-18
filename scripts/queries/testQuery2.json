@@ -1,0 +1,21 @@
+{
+  "query": {
+    "bool": {
+      "must": [
+          { "term": {
+              "mainActors": {
+                "value": "Frank Welker"
+              }
+            }
+          },
+          { "terms": {
+              "genres": [
+                "adventure",
+                "adventures"
+              ]
+            }
+          }
+      ]
+    }
+  }
+}

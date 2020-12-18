@@ -1,4 +1,5 @@
 {
+    "size": 10,
     "query": {
         "bool": {
             "must": [

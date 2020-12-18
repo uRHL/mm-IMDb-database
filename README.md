@@ -1,9 +1,12 @@
 # Film Data Base
-This is a NoSQL database for films. The films' information is scrapped from the web portal IMDb using JSoup. The documents are [inserted](#adding-data-to-elastic-search) in our Elastic Search node. [4 predefined queries](#elastic-search-queries) are created to interact with all the stored information.
+
+This is a NoSQL database for films. The films' information is scrapped from the web portal IMDb using JSoup. The documents are [inserted](#adding-data-to-elastic-search) in our Elastic Search node. [4 predefined queries](#elastic-search-queries) are included to interact with all the stored information.
+
+By [@uRHL](https://github.com/uRHL)
 
 # Obtaining the required data
 
-## (basic) Attributes scrapped from the Excel
+## Attributes scrapped from the Excel
 
 - imdbID 
 - filmURL 
@@ -52,7 +55,7 @@ Scrapping pseudocode:
     7. Extract the element's text
 	
 ### plotKeywords 
-With this information we expect to be able to query films related with an specific term. For example, similarly to the synopsis, we can query films that are related with war or violence, even though that genre is not explicitly mentioned in the attribute *genres*. 
+With this information we expect to be able to query films related with an specific term. For example, similarly to the synopsis, we can query films that are related with war or violence, even though it is not explicitly mentioned in the attribute *genres*. 
 
 Scrapping pseudocode:
 
@@ -87,25 +90,59 @@ Scrapping pseudocode:
 	1. Query <a href~=[whatever]primary_language=[whatever]
 	2. Extract the element's text
 
+## Scrapping process results
+
+The statistical data generated through all the scrapping process can be found in the file ***scrappingApp.log***. It contains information such as the average scrapping time per film, the error causing that a film could not be scrapped and more. We should mention that this process was splitted in 5 smaller tasks of 9000 films each. The reason is that IMDb servers will reject any request after scrapping ~10000 films in a round. It makes sense, since they do not want us to make a DoS attack to  In the end, the total time inverted scrapping the web was around 10 hours.
+
 # Adding data into Elastic Search
+
 ## Create the mapping 
-The script ***mapping.sh*** creates the mapping in our ElasticSearch node
+
+Once the all the data is gathered, the index structure need to be properly defined so that we can get maxiumum profit from searches.
+
+Three attributes are marked as *keywords*: the imdbID (unique identifier), mainActors (to perform queries about specific actor's names, like the [query 2](#2-actors-with-the-highest-number-of-adventure-films)) and plotKeywords (to perform queries about specific contents appearing in a film, like [query 1](#1-films-about-animals-produced-since-1950)).
+
+The rest of the attributes are text, or numeric values. Not all the attributes are of type 'text' because that type does not support some of the query functionalities provided by the Elastic Search API. For example, 'text' attributes cannot be aggregated.
+
+The script ***mapping.sh*** creates the mapping in our ElasticSearch node.
 
 	curl -X PUT "localhost:9200/films?pretty" -H 'Content-Type: application/json' -d
 	'{
-		"mappings":{
-			"properties":{
-				"imdbID":{"type":"keyword"},
-				"title":{"type":"text"},
-				"releaseYear":{"type":"integer"},
-				"avgScore":{"type":"double"},
-				"genres":{"type":"text"},
-				"mainActors":{"type":"text"},
-				"synopsis":{"type":"text"},
-				"plotKeywords":{"type":"text"},
-				"filmingLocations":{"type":"text"},
-				"originCountry":{"type":"text"},
-				"primaryLanguages":{"type":"text"}
+		"mappings": {
+			"properties": {
+				"imdbID": {
+					"type": "keyword"
+				},
+				"title": {
+					"type": "text"
+				},
+				"releaseYear": {
+					"type": "integer"
+				},
+				"avgScore": {
+					"type": "double"
+				},
+				"genres": {
+					"type":"text"
+				},
+				"mainActors": {
+					"type": "keyword"
+				},
+				"synopsis": {
+					"type": "text"
+				},
+				"plotKeywords": {
+					"type":"keyword"
+				},
+				"filmingLocations": {
+					"type": "text"
+				},
+				"originCountry": {
+					"type": "text"
+				},
+				"primaryLanguage": {
+					"type": "text"
+				}
 			}
 		}
 	}'
@@ -113,54 +150,153 @@ The script ***mapping.sh*** creates the mapping in our ElasticSearch node
 ## Indexing the documents
 
 ### Bulk API
+
 The script ***dump_data.sh*** indexes all the films in our ElasticSearch node. It requires the file ***bulkTasks.json*** generated previously. Nevertheless, this file is to big to send it in a single *curl* request. Therefore, it is splitted in smaller files (~3 MB). Each of them is sent to the Bulk API so that it can execute the tasks contained in our request.
 The source code of the script can be found in ***dump_data.sh***. The next command is an example of how to use the Bulk API with the command *curl*
 
-	curl -XPOST -H "Content-Type: application/json" "localhost:9200/film/_bulk?pretty" --data-binary "@bulkTasks.json"
+	curl -XPOST -H "Content-Type: application/x-ndjson" "localhost:9200/films/_bulk?pretty" --data-binary "@bulkTasks.json"
+
+Is important to notice that Bulk API expects a [ndjson](http://ndjson.org/) file. This is json file in which every line is delimited by a new line character (\n). This is an example of one of the bulk tasks created, with the proper *ndjson* format. 
+	
+	{"index":{}}
+	{"imdbID":10040,"title":"Daddy-Long-Legs","synopsis":"An orphan discovers that she has an anonymous benefactor who is willing to pay her college tuition, unaware he\u0027s the same man who has been romantically pursuing her.","originCountry":"USA","releaseYear":1919,"avgScore":7.6,"genres":["Comedy","Drama"],"mainActors":["Mary Pickford","Milla Davenport","Percy Haswell","Fay Lemport","Mahlon Hamilton","Lillian Langdon","Betty Bouton","Audrey Chapman","Marshall Neilan","Carrie Clark Ward","Wesley Barry","True Boardman","Jeanne Carpenter","Estelle Evans","Fred Huntley","Frankie Lee","Joan Marsh"],"plotKeywords":["benefactor","boarding school","orphan","protective male","girl","rivalry","novelist","practical joke","massachusetts","trustee","marriage proposal","snobbery","jealousy","may december romance","orphanage","college student","class distinction","millionaire","based on play","based on novel"],"filmingLocations":["Crags Road, Malibu Creek, California, USA","Busch Gardens - S. Grove Avenue, Pasadena, California, USA"],"primaryLanguages":["None","English"]}
+
 
 # Elastic Search Queries
+The source created to implement the queries can be found code the folder /scripts/queries
+
 ### 1. Films about animals produced since 1950
 
-	GET /films/_search?size=10
+This query is of type *bool*. That means that it allow us to use boolean operators within the different search parameters. In this case, and AND condition is stablished between two statements: first, matches with any word included in our animal-dictionary, and second, the film's release year must be after 1950. The dictionary is to big to show it here, the complete request can be found in the file *query1.json*. The structure of the query is as follows:
+
 	{
-	"query": {
-		"bool": {
-		"must": [
-			{ "query_string": {
-			"fields": ["title²", "synopsis", "plotKeywords³"], 
-			"query": "(Aardvark) OR (Albatross) OR (Alligator) OR (Alpaca) OR (Ant) OR (Anteater) OR (Antelope) OR (Ape) OR (Armadillo) OR (Donkey) OR (Baboon) OR (Badger) OR (Barracuda) OR (Bat) OR (Bear) OR (Beaver) OR (Bee) OR (Bison) OR (Boar) OR (Buffalo) OR (Butterfly) OR (Camel) OR (Capybara) OR (Caribou) OR (Cassowary) OR (Cat) OR (Caterpillar) OR (Cattle) OR (Chamois) OR (Cheetah) OR (Chicken) OR (Chimpanzee) OR (Chinchilla) OR (Chough) OR (Clam) OR (Cobra) OR (Cockroach) OR (Cod) OR (Cormorant) OR (Coyote) OR (Crab) OR (Crane) OR (Crocodile) OR (Crow) OR (Curlew) OR (Deer) OR (Dinosaur) OR (Dog) OR (Dogfish) OR (Dolphin) OR (Dotterel) OR (Dove) OR (Dragonfly) OR (Duck) OR (Dugong) OR (Dunlin) OR (Eagle) OR (Echidna) OR (Eel) OR (Eland) OR (Elephant) OR (Elk) OR (Emu) OR (Falcon) OR (Ferret) OR (Finch) OR (Fish) OR (Flamingo) OR (Fly) OR (Fox) OR (Frog) OR (Gaur) OR (Gazelle) OR (Gerbil) OR (Giraffe) OR (Gnat) OR (Gnu) OR (Goat) OR (Goldfinch) OR (Goldfish) OR (Goose) OR (Gorilla) OR (Goshawk) OR (Grasshopper) OR (Grouse) OR (Guanaco) OR (Gull) OR (Hamster) OR (Hare) OR (Hawk) OR (Hedgehog) OR (Heron) OR (Herring) OR (Hippopotamus) OR (Hornet) OR (Horse) OR (Human) OR (Hummingbird) OR (Hyena) OR (Ibex) OR (Ibis) OR (Jackal) OR (Jaguar) OR (Jay) OR (Jellyfish) OR (Kangaroo) OR (Kingfisher) OR (Koala) OR (Kookabura) OR (Kouprey) OR (Kudu) OR (Lapwing) OR (Lark) OR (Lemur) OR (Leopard) OR (Lion) OR (Llama) OR (Lobster) OR (Locust) OR (Loris) OR (Louse) OR (Lyrebird) OR (Magpie) OR (Mallard) OR (Manatee) OR (Mandrill) OR (Mantis) OR (Marten) OR (Meerkat) OR (Mink) OR (Mole) OR (Mongoose) OR (Monkey) OR (Moose) OR (Mosquito) OR (Mouse) OR (Mule) OR (Narwhal) OR (Newt) OR (Nightingale) OR (Octopus) OR (Okapi) OR (Opossum) OR (Oryx) OR (Ostrich) OR (Otter) OR (Owl) OR (Oyster) OR (Panther) OR (Parrot) OR (Partridge) OR (Peafowl) OR (Pelican) OR (Penguin) OR (Pheasant) OR (Pig) OR (Pigeon) OR (Pony) OR (Porcupine) OR (Porpoise) OR (Quail) OR (Quelea) OR (Quetzal) OR (Rabbit) OR (Raccoon) OR (Rail) OR (Ram) OR (Rat) OR (Raven) OR (Red deer) OR (Red panda) OR (Reindeer) OR (Rhinoceros) OR (Rook) OR (Salamander) OR (Salmon) OR (Sand Dollar) OR (Sandpiper) OR (Sardine) OR (Scorpion) OR (Seahorse) OR (Seal) OR (Shark) OR (Sheep) OR (Shrew) OR (Skunk) OR (Snail) OR (Snake) OR (Sparrow) OR (Spider) OR (Spoonbill) OR (Squid) OR (Squirrel) OR (Starling) OR (Stingray) OR (Stinkbug) OR (Stork) OR (Swallow) OR (Swan) OR (Tapir) OR (Tarsier) OR (Termite) OR (Tiger) OR (Toad) OR (Trout) OR (Turkey) OR (Turtle) OR (Viper) OR (Vulture) OR (Wallaby) OR (Walrus) OR (Wasp) OR (Weasel) OR (Whale) OR (Wildcat) OR (Wolf) OR (Wolverine) OR (Wombat) OR (Woodcock) OR (Woodpecker) OR (Worm) OR (Wren) OR (Yak) OR (Zebra)"}
-			},
-			{ "range": { "releaseYear": { "gte": 1950 }}
-			
+		"query": {
+			"bool": {
+			"must": [
+				{ "query_string": {
+				"fields": ["title^2", "synopsis", "plotKeywords^3"], 
+				"query": animal-dictionary }
+				},
+				{ "range": { "releaseYear": { "gte": 1950 }}
+				
+				}
+			]
 			}
-		]
 		}
-	}
 	}
 
 ### 2. Actors with the highest number of ‘adventure’ films
 
-	GET _search
+For this query it was essential to set the type of *mainActors* attribute to *keyword*. Otherwise it would not be possible to make an aggregation on that attribute. The query is divided in two nested aggregations. First, we select all the films related with 'Adventure'. Then, we group all those films by the main actors, so that we can count who has appeared more times in this types of films. The query structure is the following:
+
 	{
-	"query": {
-		"bool": {
-		"must": [
-			{
-			"term": {
-				"genres": {
-				"value": "adventure"
+		"size": 0, 
+		"aggs": {
+			"adventure_agg": {
+				"filter": {
+					"query_string": {
+						"fields": ["genres^2", "plotKeywords"], 
+						"query": "(adventure) OR (adventures)"
+					}
+				}, 
+				"aggs": {
+					"top_20_adventure_actors": {
+						"terms": {
+							"field": "mainActors",
+							"size": 20
+						}
+					}
 				}
 			}
-			}
-		]
 		}
 	}
+
+The effectiveness of the query can be checked with another search, included in the file ***testQuery2.json***. If we run it, we can see that effectively, a man called "Frank Welker" is the actor that appears more times in adventures films (118 films!).
+
+### 3. Films about ‘crimes’ available in the collection && number of these films per year
+
+The query three retrives the list (only the first 10 are shown) of crime fils stored in our Elastic Search node. Additionally, it also shows the number of crime films per year, from 2020 to 1920.
+
+	{
+		"size": 10, 
+		"query": {
+			"query_string": {
+				"fields": ["genres^2", "plotKeywords"], 
+				"query": "(crime) OR (crimes)"
+			}
+		},
+		"aggs": {
+			"Terms_Aggregation" : {
+				"terms": { 
+					"field": "releaseYear",
+					"size": 150,
+					"order": {
+						"_key": "desc"
+					}
+				}
+			}
+		}
 	}
-### 3. Films about ‘crimes’available in the collection && number of these films per year
+
 ### 4. Films with social contents in Spain and LatinAmerica
-First, a dictionary of spanish words was generated from 3 different Wikipedia pages: [1000 basic Spanish words](https://es.wiktionary.org/wiki/Ap%C3%A9ndice:1000_palabras_b%C3%A1sicas_en_espa%C3%B1ol), [History of Spain](https://es.wikipedia.org/wiki/Historia_de_Espa%C3%B1a), [History of South America](https://es.wikipedia.org/wiki/Historia_de_Sudam%C3%A9rica)
-The dictionary is named ***spanish-word-dic.json***, anc contains 2851 words.
+
+First, a dictionary of spanish words was generated from 2 different Wikipedia pages: [History of Spain](https://es.wikipedia.org/wiki/Historia_de_Espa%C3%B1a) and [History of South America](https://es.wikipedia.org/wiki/Historia_de_Sudam%C3%A9rica)
+The dictionary is named ***spanish-word-dic.json***, anc contains 1024 words. Although more words could have been added, the size is fixed to accomplish the Elastic Search setting.
+
+Some attributes are boosted against others. For example, we give higher punctuation to the matches with *plotkeywords*, while matches with synopsis are the less valuable.
+
+The spanish-word-dictionary is to big to include it here, but the query structure is as follows:
+
+	{
+		"size": 10,
+		"query": {
+			"query_string": {
+				"fields": [
+					"title^2",
+					"synopsis",
+					"plotKeywords^4",
+					"filmingLocations^2",
+					"originCountry^2",
+					"primaryLanguages^2"
+				],
+				"query": spanish-word-dic
+			}
+		}
+	}
+
+# How to run the project on your own computer
+
+Note: If you want to go directly into Elastic Search, you can skip the Scrap stage and use the files I included in the directory /output. For that you will need to have [git-lfs](https://git-lfs.github.com/) installed in your computer. Otherwise, the file bulkTasks.json will be downloaded as a pointer, without data, since the file is bigger than the maximum GitHub file size (100MB).
+
+### Scrap all the data.
+1. Configure the ScriptingApp paramters. Those can be found in the class ScrappingApp.
+   1. I recomend you to scrap the films in bunchs of 9000 films at most to avoid being banned by IMDb servers. The block is not permanent, do not worry, but if you try to do it all at once, you will find that most of the scraps have fail.
+2. Compile the project and run the main class ScrappingApp.
+    1. Each time you execute ScrappingApp, you will have a detailed log available to check how successful (or not) the process was. Look for the file ***scrappingApp.log***.
+3. Once you have scrapped the 40000 films contained in the original Excel file you are good to continue to the next step.
 
 
-## Additional information
+
+### Prepare the Elastic Search node
+1. I am assuming that you have Elastic Search installed in your machine or deployed with Docker. If that is not the case, you can find how to install it [here](https://www.digitalocean.com/community/tutorials/how-to-install-elasticsearch-logstash-and-kibana-elastic-stack-on-ubuntu-18-04).
+2. Create the mapping. To do so, open a terminal and run the script ***mapping.sh***.
+   
+		bash mapping.sh
+
+3. Index all the data you have gathered. All this data is stored in the ***file bulkTasks.json***. The file is so big that it cannot be sent in a single request. But do not worry, I have automated the process. Just execute the script ***dump_data.sh*** from the terminal and in 1 minute you will have 40K documents in your Elastic Search node.
+   
+		bash dump_data.sh
+
+### Execute the queries
+1. In a terminal, run the script ***elastic_queries.sh*** to test the 5 predefined queries that I included.
+
+	bash elastic_queries.sh	
+
+2. You can add your own queries by creating the required request file (*queryX.json*) and including a new option in the script *elastic_queries.sh*.
+3. [*Knowledge will make you free*.](https://www.goodreads.com/quotes/9390784-knowledge-will-make-you-be-free)  Have fun!
+
+
+# Conclusions
+
+Through this project I have learn a lot. Not only about NLP or Elastic Search, but how to work with a complete framework that integrates many different funnctionalities. In the future I would like to implement a similar project for my own. I can say that I am very proud of the results, and all the effort invested.
 
